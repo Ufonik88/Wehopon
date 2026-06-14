@@ -1,257 +1,311 @@
-# WeHopOn Technical Blueprint
+# HandshakeLab — Technical Blueprint
 
-**Project:** WeHopOn (Collaborative Hop-On/Hop-Off Travel Planner)
-**Date:** 2026-06-14
-**Status:** Phase 1 Skeleton Complete (verification in progress)
-**Approach:** Web-first MVP with Next.js 16 + Tailwind 4 + Supabase + Prisma. Ready-to-fill template for the specific concept.
-
----
-
-## 1. Discovery & Research Phase
-
-### Feasibility Analysis
-To evaluate core technical challenges, APIs, and third-party integrations for a modern app like WeHopOn:
-
-- **Core Challenges:**
-  - Real-time collaboration (location sharing, itinerary updates) → WebSockets or Supabase Realtime.
-  - User authentication & authorization (multi-tenant trips, invites) → Supabase Auth (OAuth + email), JWT, RLS policies.
-  - Geolocation & maps (stops, routes) → Google Maps / Mapbox API or Leaflet + OpenStreetMap (free tier).
-  - Offline support & sync for travel scenarios → Service workers, IndexedDB, eventual consistency with Supabase.
-  - Scalability for group features (notifications, payments if added) → Vercel Edge + Supabase Postgres (connection pooling).
-  - Data privacy (travel plans, locations) → GDPR compliance, Supabase RLS, encrypted at rest.
-
-- **APIs & Integrations Needed:**
-  - Auth: Supabase (Google, Apple, email/magic link).
-  - Maps: Mapbox or Google Places for autocomplete/search.
-  - Notifications: Supabase Edge Functions + Resend or Twilio.
-  - Payments (future): Stripe (if monetization via premium groups).
-  - External data: Weather APIs (OpenWeather), public transport (if hop-on/hop-off specific).
-
-- **Risks & Mitigations:**
-  - API rate limits/costs: Start with free tiers (Supabase, Mapbox free), add caching (Vercel KV or Redis).
-  - Real-time latency: Supabase Realtime is sufficient for MVP; fallback to polling.
-  - Multi-device sync: Prisma + Supabase handles it; test with conflict resolution (last-write-wins or CRDT for complex cases).
-  - Feasibility score: High (all components have mature, free/cheap SDKs in 2026). Timeline for MVP: 2-4 weeks with 1-2 developers.
-
-Validate by spiking key integrations (e.g., Supabase Realtime + Mapbox in a throwaway branch) before full commit.
-
-### Target Tech Stack
-
-**Web-first Approach (Recommended for MVP):**
-- **Frontend:** Next.js 16 (App Router) + TypeScript + Tailwind CSS 4 + shadcn/ui (or Radix primitives) + TanStack Query + React Hook Form + Zod.
-- **Backend:** Next.js API routes / Server Actions + Supabase (Auth + Realtime + Storage) + Prisma ORM (for type-safe queries/migrations).
-- **Database:** Supabase Postgres (with connection pooling for serverless) + Prisma.
-- **Hosting/Cloud:** Vercel (frontend + Edge Functions) + Supabase (DB/Auth) + Mapbox (maps). CI: GitHub Actions. Monitoring: Vercel Analytics + Sentry.
-- **Pros:** Fast iteration, excellent DX (TypeScript end-to-end, server components reduce client JS), built-in SSR/SEO, seamless Supabase integration, cheap/free tiers, auto-scaling.
-- **Cons:** Serverless cold starts (mitigate with edge), vendor lock-in to Vercel/Supabase (but portable via Prisma).
-
-**Mobile-first Approach (Future/Alternative):**
-- **Frontend:** React Native (Expo) or Flutter + TypeScript + Tailwind (via NativeWind) + React Query.
-- **Backend:** Same as web (Supabase + Prisma exposed via tRPC or REST).
-- **Database:** Same Supabase Postgres.
-- **Hosting/Cloud:** Expo EAS / Vercel for web, Supabase, Mapbox.
-- **Pros:** Single codebase for iOS/Android/web (with React Native Web), native feel, offline-first easier with libraries like WatermelonDB.
-- **Cons:** Slower initial dev (native quirks, debugging), larger bundle, more complex auth (deep links), higher maintenance for platform-specific bugs. Cost: Expo free tier limited for production builds.
-
-**Recommendation:** Start web-first (Next.js) for rapid validation of core loops (create/join trip, add stops, share). Mobile PWA or separate RN app in Phase 2. This matches the executed skeleton in `/home/ufonik/wehopon`.
+**Date:** 2026-06-14  
+**Status:** Phase 0 — Planning complete, implementation not started  
+**Approach:** Linux-native, CLI-first, offline cracking workstation
 
 ---
 
-## 2. System Architecture & Integration ("Wiring it Together")
+## 1. Discovery & research
 
-### Data Flow & API Design
-Frontend (Next.js client) communicates with backend via:
-- **Server Actions / Route Handlers** (for mutations, prefer over REST for simplicity in Next.js).
-- **Supabase Realtime** (for live updates: new stops, member joins, location pings).
-- **tRPC** (optional for typed RPC if complexity grows; current skeleton uses direct Supabase client + Prisma).
-- Fallback: Standard REST if needed for external consumers.
+### 1.1 Problem validation
 
-**Key API Endpoints (Template - customize per concept):**
+Your brief maps directly to the standard **offline WPA-PSK audit** workflow used in penetration testing and hardware QA:
 
-```ts
-// Example in app/api/trips/route.ts or server actions
-POST /api/trips          // Create trip {name, startDate, stops: [...]}
-GET  /api/trips/:id      // Get trip details + members + stops
-PATCH /api/trips/:id     // Update trip metadata
-POST /api/trips/:id/invite // Send invite (email or link)
-POST /api/stops          // Add stop {tripId, lat, lng, name, time}
-GET  /api/stops?tripId=  // List stops (realtime subscribed)
-POST /api/locations      // Update user location ping (for live map)
+| Brief requirement | Industry equivalent |
+| --- | --- |
+| Capture a packet | 802.11 EAPOL 4-way handshake or PMKID capture |
+| Save locally | `.pcapng` evidence store |
+| Crack there (offline) | Hashcat mode 22000 / aircrack-ng |
+| Show password | Post-crack passphrase reveal |
+| Avoid failed logins | No online PSK brute force against AP |
+
+This is the **correct** approach for product testing: the AP is not subjected to repeated authentication failures.
+
+### 1.2 Feasibility
+
+| Component | Maturity | Risk |
+| --- | --- | --- |
+| Monitor mode capture | High (linux `mac80211`) | Medium — driver-dependent |
+| hcxdumptool PMKID | High | Low on WPA2 |
+| Hashcat WPA | High | Low |
+| WPA3-SAE cracking | Low/Medium | High — different attack surface |
+| Python orchestration | High | Low |
+
+**Feasibility score:** High for WPA2-PSK lab networks. WPA3-only targets need explicit lab policy.
+
+### 1.3 WPA2 vs WPA3 notes
+
+- **WPA2-PSK:** Capture EAPOL frames → PBKDF2-HMAC-SHA1 (4096 iterations) → Hashcat cracks offline.
+- **WPA3-SAE:** Dragonfly handshake; dictionary attacks still possible for **weak passwords** but capture format and tools differ. v1 focuses WPA2-PSK; WPA3 documented as Phase 2 stretch.
+
+### 1.4 Toolchain survey
+
+| Tool | Role | Verdict |
+| --- | --- | --- |
+| **hcxdumptool** | Live capture → pcapng | Primary capture |
+| **hcxpcapngtool** | pcapng → .22000 | Primary converter |
+| **Hashcat** | Offline cracking | Primary cracker |
+| aircrack-ng | Legacy capture/crack | Fallback |
+| Wireshark/tshark | Inspection | Debug only |
+| wifite2 | Orchestrator | Reference only; too opinionated for QA |
+
+---
+
+## 2. System architecture
+
+### 2.1 Component diagram
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                        Linux lab workstation                      │
+│  ┌────────────┐  ┌─────────────┐  ┌──────────┐  ┌─────────────┐ │
+│  │ handshakelab│  │  SQLite     │  │ captures/│  │  wordlists/ │ │
+│  │ CLI (Python)│  │  vault DB   │  │  artifacts│  │  (local)    │ │
+│  └──────┬─────┘  └─────────────┘  └──────────┘  └─────────────┘ │
+│         │ orchestrates                                            │
+│         v                                                         │
+│  ┌──────────────┐   ┌───────────────┐   ┌─────────────────────┐  │
+│  │ hcxdumptool  │   │ hcxpcapngtool │   │ hashcat             │  │
+│  │ (capture)    │   │ (convert)     │   │ (offline crack)     │  │
+│  └──────┬───────┘   └───────────────┘   └─────────────────────┘  │
+│         │ requires root + monitor mode                              │
+│         v                                                         │
+│  ┌──────────────────────────────────────────────────────────────┐│
+│  │ USB WiFi adapter (nl80211)  ──RF──>  Lab AP under test       ││
+│  └──────────────────────────────────────────────────────────────┘│
+└──────────────────────────────────────────────────────────────────┘
 ```
 
-Authentication: Supabase session (JWT in cookies or headers). Authorization via RLS policies on tables.
+### 2.2 Data flow
 
-### Database Schema
-(Prisma schema from current skeleton – ready for extension.)
+1. **Preflight** (`handshakelab doctor`)
+   - Verify root/sudo, adapter present, `iw phy` shows monitor mode, hashcat/hcxtools installed.
+   - Load `lab.toml` allow-listed BSSIDs.
 
-```prisma
-// prisma/schema.prisma (Prisma 7 compatible)
-model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  name          String?
-  avatarUrl     String?
-  memberships   Membership[]
-  locationPings LocationPing[]
-  createdAt     DateTime  @default(now())
-}
+2. **Scan** (`handshakelab scan -i wlan1`)
+   - Passive scan; no injection.
 
-model Trip {
-  id          String   @id @default(cuid())
-  name        String
-  description String?
-  startDate   DateTime?
-  endDate     DateTime?
-  ownerId     String
-  owner       User     @relation(fields: [ownerId], references: [id])
-  stops       Stop[]
-  members     Membership[]
-  createdAt   DateTime @default(now())
-}
+3. **Capture** (`handshakelab capture --ssid LAB-AP --channel 36 --duration 120`)
+   - Set monitor mode on `wlan1`.
+   - Run `hcxdumptool -i wlan1 -o capture.pcapng --filterlist_ap=...`.
+   - Validate EAPOL present via `tshark` filter.
 
-model Membership {
-  id     String @id @default(cuid())
-  userId String
-  tripId String
-  role   String   @default("member") // owner, member, viewer
-  user   User     @relation(fields: [userId], references: [id])
-  trip   Trip     @relation(fields: [tripId], references: [id])
-  @@unique([userId, tripId])
-}
+4. **Convert** (`handshakelab convert capture.pcapng`)
+   - `hcxpcapngtool -o crack.22000 capture.pcapng`
+   - Abort if zero hashes extracted.
 
-model Stop {
-  id          String   @id @default(cuid())
-  tripId      String
-  trip        Trip     @relation(fields: [tripId], references: [id])
-  name        String
-  lat         Float
-  lng         Float
-  scheduledAt DateTime?
-  notes       String?
-  createdById String
-  createdBy   User     @relation(fields: [createdById], references: [id])
-  createdAt   DateTime @default(now())
-}
+5. **Crack** (`handshakelab crack crack.22000 --wordlist qa-wordlist.txt`)
+   - `hashcat -m 22000 -a 0 crack.22000 qa-wordlist.txt`
+   - Stream progress to `crack.log`.
 
-model LocationPing {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id])
-  tripId    String?
-  lat       Float
-  lng       Float
-  timestamp DateTime @default(now())
-}
+6. **Reveal** (`handshakelab show <run-id>`)
+   - Print passphrase to terminal (masked by default, `--reveal` to show).
+
+7. **Report** (`handshakelab report <run-id> --format markdown`)
+   - QA artifact for test case attachment.
+
+### 2.3 Database schema (SQLite)
+
+```sql
+CREATE TABLE runs (
+  id TEXT PRIMARY KEY,
+  created_at TEXT NOT NULL,
+  operator TEXT,
+  ssid TEXT,
+  bssid TEXT,
+  channel INTEGER,
+  adapter TEXT,
+  capture_path TEXT,
+  hash_path TEXT,
+  status TEXT,  -- captured | converted | cracked | failed
+  authorized_by TEXT
+);
+
+CREATE TABLE crack_results (
+  run_id TEXT PRIMARY KEY REFERENCES runs(id),
+  cracked_at TEXT,
+  method TEXT,       -- hashcat:22000:wordlist
+  duration_ms INTEGER,
+  passphrase TEXT,   -- optional AES-GCM blob
+  success INTEGER
+);
 ```
 
-**Auth/Authorization:** Supabase Auth (email + OAuth). RLS policies e.g. "Users can only see trips they are members of". JWT for server verification.
+### 2.4 Configuration (`lab.toml`)
 
-### System Architecture Diagram (Text-based/Mermaid)
-See accompanying `WeHopOn_architecture.html` (generated with architecture-diagram skill, dark theme, open in browser).
+```toml
+[lab]
+name = "Ajax Randburg Bench"
+operator = "ufonik"
+require_authorization = true
 
-```mermaid
-graph TD
-    A[Users / Browser / Mobile PWA] -->|HTTPS| B[Next.js on Vercel]
-    B -->|Server Actions / Realtime| C[Supabase Auth + Realtime]
-    B -->|Prisma Client| D[Supabase Postgres]
-    B -->|Mapbox API| E[Maps & Places]
-    C -->|JWT + RLS| D
-    F[External: Weather / Transport APIs] --> B
+[[allowed_targets]]
+ssid = "LAB-AP-01"
+bssid = "AA:BB:CC:DD:EE:FF"
+owner = "Ajax Systems QA"
+authorization_ref = "QA-2026-014"
+
+[capture]
+default_adapter = "wlan1"
+default_duration_sec = 120
+deauth_enabled = false
+
+[crack]
+hashcat_bin = "/usr/bin/hashcat"
+wordlist = "/opt/handshakelab/wordlists/qa-internal.txt"
+workload_profile = 2
 ```
 
-(Full visual in the HTML file with color-coded layers: cyan frontend, emerald backend, violet DB, amber cloud, rose security.)
+---
+
+## 3. CLI specification
+
+### 3.1 Commands (v1)
+
+```
+handshakelab doctor                    # toolchain + adapter preflight
+handshakelab scan -i wlan1             # list networks (passive)
+handshakelab capture -i wlan1 --ssid SSID [--channel N] [--duration SEC]
+handshakelab convert RUN_ID|FILE       # pcapng -> 22000
+handshakelab crack RUN_ID [--wordlist PATH] [--rules PATH]
+handshakelab show RUN_ID [--reveal]    # display result
+handshakelab report RUN_ID [-f md|json]
+handshakelab list                      # show all runs in vault
+```
+
+### 3.2 Example session
+
+```bash
+sudo handshakelab doctor
+sudo handshakelab scan -i wlan1
+sudo handshakelab capture -i wlan1 --ssid LAB-CAM-TEST --channel 6 --duration 180
+handshakelab convert latest
+handshakelab crack latest --wordlist ./wordlists/ajax-qa.txt
+handshakelab show latest --reveal
+# Tester manually enters password into device under test
+```
 
 ---
 
-## 3. Comprehensive Design & UI/UX Plan
+## 4. Implementation modules
 
-### Wireframing & Prototyping
-Step-by-step workflow:
-1. **Low-fidelity (paper/Figma lo-fi):** Sketch core flows – Landing → Login/Signup → Dashboard (list of trips) → Trip detail (map + stops list + members) → Add stop modal.
-2. **User flows:** Create trip → Invite members → Add/edit stops (drag on map) → Live location share toggle → Notifications for changes.
-3. **Mid-fi in Figma:** Add basic layout, placeholders for maps.
-4. **High-fidelity interactive prototype:** Use Figma prototypes or Framer for clickable demo. Test with 3-5 users (focus on mobile responsiveness first).
-5. **Handoff:** Export specs/tokens to code. Iterate post-MVP with real user feedback.
+### 4.1 Package layout
 
-Tools: Figma (free for starters), FigJam for flows. Validate assumptions early (e.g., "Do users want real-time or async updates?").
+```
+src/handshakelab/
+├── __init__.py
+├── __main__.py
+├── cli.py              # Typer entrypoints
+├── config.py           # lab.toml loader + validation
+├── doctor.py           # preflight checks
+├── scan.py             # iw/nmcli passive scan
+├── capture.py          # hcxdumptool wrapper
+├── convert.py          # hcxpcapngtool wrapper
+├── crack.py            # hashcat wrapper + potfile parser
+├── vault.py            # SQLite + filesystem paths
+├── report.py           # markdown/json export
+├── legal.py            # authorization gate
+└── util/
+    ├── proc.py         # subprocess runner with logging
+    └── wifi.py         # monitor mode helpers
+```
 
-### Design System
-Guidelines (implemented in current skeleton via Tailwind 4 + CSS variables):
-- **Design Tokens:**
-  - Colors: Primary #00B67A (Ajax green inspiration if co-branded; or cyan for travel: #22d3ee), backgrounds #020617 (slate-950), accents emerald/violet.
-  - Typography: JetBrains Mono for code/UI labels; system sans (Inter or similar) for body. Scale: 12px / 14px / 16px / 20px / 24px / 32px.
-  - Spacing: 4px base (Tailwind scale 1-12), consistent padding/margins.
-  - Shadows/Borders: Subtle 1px borders (#1e293b), soft shadows for cards.
-- **Reusable UI Components:** shadcn/ui or Radix-based (Button, Card, Modal, Map wrapper, Member avatar list). Current: Button with variants (default, outline, ghost) using class-variance-authority + tailwind-merge + lucide icons.
-- **Accessibility:** ARIA labels, keyboard nav, high contrast, responsive (mobile-first via Tailwind).
-- **Theming:** Dark mode by default (travel apps often low-light). CSS vars for easy extension.
-- **Brand:** Clean, map-centric, trustworthy. Icons for stops (pin), members (users), live (pulse).
+### 4.2 Error handling
 
-Prototype in Figma first, then implement in code matching tokens exactly.
+| Error | User message | Recovery |
+| --- | --- | --- |
+| Not root | "Capture requires root. Re-run with sudo." | Exit 1 |
+| No monitor mode | "Adapter wlan1 does not support monitor mode." | Link to HARDWARE.md |
+| SSID not allow-listed | "SSID not in lab.toml. Refusing capture." | Exit 2 |
+| No EAPOL in capture | "No handshake found. Retry capture or enable passive wait." | Exit 3 |
+| Hashcat missing | "Install hashcat: apt install hashcat" | Exit 1 |
 
----
+### 4.3 Logging
 
-## 4. Step-by-Step Coding & Implementation Roadmap
-
-Breakdown into agile phases (current execution follows this; Phase 1 skeleton live in /home/ufonik/wehopon).
-
-### Phase 1: MVP Scoping & Setup (Current – In Progress)
-- Repository setup: `create-next-app@latest wehopon --tailwind --eslint --yes --tailwind --app`.
-- CI/CD: GitHub Actions for lint/build/test (basic workflow added).
-- Boilerplate: Supabase SSR clients (`@supabase/ssr`), Prisma setup (schema + prisma.config.ts for v7), Zod validation, React Hook Form, TanStack Query, Sonner toasts, lucide-react.
-- Auth pages: `(auth)/login` and `/signup` with email/password + validation, signout route.
-- Protected dashboard: Server-side auth check, basic UI.
-- Design tokens + Button component (shadcn-ready).
-- Package scripts for db (generate, migrate, studio, push).
-- .env.example with Supabase direct (for CLI) + pooler (for app) guidance.
-- Fixes applied: Prisma 7 compatibility, Tailwind v4 @theme inline for custom colors (bg-primary etc.), UI deps installed.
-- **Status:** UI layer ready. Verification (audit, generate, build) queued in background. Landing page polished.
-
-**Acceptance:** `npm run build` passes cleanly, login → protected dashboard works with real Supabase project.
-
-### Phase 2: Backend & Database Development
-- Expand Prisma schema (add real entities based on concept: e.g. full Trip/Stop/Membership with relations, indexes for geo queries).
-- Migrations: `prisma migrate dev`.
-- API routes / Server Actions: CRUD for trips/stops, invite logic (email via Resend or Supabase).
-- Realtime: Subscribe to changes in trip views.
-- Auth/RLS policies: Enforce membership.
-- Background jobs (if needed): Supabase Edge Functions for notifications.
-
-### Phase 3: Frontend Integration
-- Connect UI to APIs: Trip list, detail view with interactive map (Mapbox or Leaflet), add-stop form (modal + geocode).
-- Real-time: Live member locations, stop updates (use Supabase channel).
-- State: TanStack Query for caching/mutations, optimistic updates.
-- Responsive: Mobile-first trip views, map full-bleed on detail.
-- Polish: Loading states, error boundaries, empty states.
-
-### Phase 4: Testing & QA
-- Unit: Jest/Vitest for utils, form validation.
-- Integration: Playwright or Cypress for auth flows, trip CRUD (e2e with test Supabase project).
-- API: Supertest or built-in Next tests.
-- Performance: Lighthouse for Core Web Vitals, especially map load.
-- Security: OWASP checks (no XSS in map pins, proper auth), RLS tests.
-- Accessibility: axe or manual keyboard testing.
-
-**Strategy:** TDD where possible (tests first for critical paths). Aim >70% coverage on core logic.
-
-### Phase 5: Deployment & Launch
-- Production env: Vercel project, Supabase production project (enable RLS, add domain).
-- Monitoring: Vercel Analytics, Sentry for errors, Supabase logs.
-- Analytics: PostHog or Vercel + simple event tracking (trip created, stop added).
-- Launch: Soft launch to beta users, collect feedback via in-app form or Typeform.
-- CI/CD: Auto-deploy on main, preview branches on PRs.
-- Scaling: Monitor connection pool, add CDN for static maps/assets.
-- Post-launch: Feature flags (Vercel), A/B for UX tweaks.
-
-**Overall Timeline (Web-first MVP):** 3-6 weeks to launchable beta, depending on concept complexity and team size.
+- Structured JSON logs to `~/.local/share/handshakelab/logs/`
+- Per-run `meta.json` includes tool versions (`hashcat -V`, `hcxdumptool -v`)
 
 ---
 
-**Next Actions (Actioning the Build Plan):**
-- Background verification is queued (audit fix, prisma generate, build). Results will confirm Phase 1 completion.
-- Full skeleton is live and matches the web-first stack from this blueprint.
-- **Critical:** Provide the specific WeHopOn app concept (e.g. "group hop-on/hop-off bus tours with live GPS sharing and collaborative itineraries for 5-20 people"). This will allow customization of the Prisma schema, UI flows, and move to Phase 2 features.
-- PlanForge/ .planning/ is bootstrapped in the project for ongoing tracking.
-- Architecture diagram (HTML) can be generated next once concept is clear.
+## 5. Security architecture
 
-The blueprint is now complete in the exact requested structure. Ready to iterate and build the real product.
+### 5.1 Threat model
+
+| Threat | Control |
+| --- | --- |
+| Misuse on public WiFi | `lab.toml` allow-list + legal acknowledgment flag |
+| Passphrase leakage | Masked display; optional encryption; no network join |
+| Tampered captures | SHA-256 of pcapng in `meta.json` |
+| Privilege escalation | Minimal sudo surface; only capture module needs root |
+
+### 5.2 Authorization gate
+
+Before `capture`:
+
+```python
+def assert_authorized(ssid: str, bssid: str, config: LabConfig) -> None:
+    if not config.require_authorization:
+        return
+    if not config.find_target(ssid, bssid):
+        raise AuthorizationError(
+            f"Target {ssid}/{bssid} not in lab.toml. "
+            "Add explicit authorization before capture."
+        )
+```
+
+CLI adds `--ack-authorized` for interactive sessions.
+
+---
+
+## 6. Testing blueprint
+
+### 6.1 Fixtures
+
+- `tests/fixtures/sample.eapol.pcapng` — synthetic handshake (generated in lab)
+- `tests/fixtures/known-password.txt` — single entry matching fixture
+- `tests/fixtures/lab.toml` — test allow-list
+
+### 6.2 CI strategy
+
+GitHub Actions:
+
+- **lint:** `ruff check`, `mypy` (no hardware)
+- **unit:** convert/crack parsing with mocked hashcat
+- **integration:** skipped on CI; manual `HIL_CHECKLIST.md` on release
+
+---
+
+## 7. Deployment model
+
+- **Not deployed to cloud.** Installed on lab machines only.
+- `pip install -e ".[dev]"` from repo.
+- Optional `.deb` wrapper later.
+- Hashcat GPU drivers installed separately (NVIDIA/CUDA or ROCm).
+
+---
+
+## 8. Future enhancements (post-MVP)
+
+| Feature | Priority |
+| --- | --- |
+| FastAPI localhost dashboard | Medium |
+| WPA3-SAE capture notes | Medium |
+| Automatic report upload to test management | Low |
+| Distributed cracking | Out of scope |
+| Mobile app | Out of scope |
+
+---
+
+## 9. Acceptance criteria (MVP)
+
+1. `handshakelab doctor` passes on bench machine with compatible adapter.
+2. Capture + convert + crack succeeds against lab AP with known 8+ char password.
+3. Zero online authentication attempts sent to AP during crack phase.
+4. `handshakelab show` displays passphrase; tester manually joins DUT.
+5. `report` generates Markdown suitable for QA ticket attachment.
+6. All operations logged; unauthorized SSID blocked.
+
+---
+
+*This blueprint replaces the previous travel-planner document entirely.*

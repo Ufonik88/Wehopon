@@ -1,41 +1,35 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# HandshakeLab artifacts — never commit
+captures/
+*.pcap
+*.pcapng
+*.22000
+*.hccapx
+hashcat.potfile
+lab.toml
+wordlists/
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
+# Secrets
 .env*
 
-# vercel
-.vercel
+# IDE / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
 
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Legacy Next.js (removed)
+node_modules/
+.next/

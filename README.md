@@ -1,87 +1,100 @@
-# WeHopOn
+# HandshakeLab
 
-**Status:** Phase 1 skeleton (from the Technical Blueprint in [`docs/TECHNICAL_BLUEPRINT.md`](docs/TECHNICAL_BLUEPRINT.md))
+**Offline WiFi handshake capture & crack workstation for authorized product testing.**
 
-> A collaborative hop-on/hop-off group travel planner.
-> Built with Next.js 16 + Supabase + Prisma + Tailwind 4.
+> Capture once → save locally → crack offline → reveal password → manually join the device under test.  
+> No repeated failed logins against the AP.
 
-## Architecture
+**Repository:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
+**Status:** Phase 0 — Planning complete; implementation starting Phase 1  
+**Platform:** Linux + monitor-mode USB WiFi adapter
 
-System architecture diagram (dark theme, generated via the `architecture-diagram` skill):
-[`docs/architecture.html`](docs/architecture.html) — open in a browser for the full colour-coded flow.
+---
 
-## Quick Start
+## What this is
 
-```bash
-cp .env.example .env.local   # Fill in Supabase + DATABASE_URL values
-npm install                   # Already done if you cloned the repo
-npx prisma generate
-npm run dev
-```
+HandshakeLab helps QA and security testers validate WiFi devices **on lab networks they own or are authorized to test**:
 
-Visit <http://localhost:3000> → `/login` or `/signup` → protected `/dashboard`.
+1. **Capture** a WPA handshake or PMKID from the air
+2. **Save** `capture.pcapng` and a Hashcat-ready `.22000` hash file
+3. **Crack offline** with Hashcat (CPU/GPU) — the router is not hammered with wrong passwords
+4. **Show** the recovered passphrase so you type it manually into the device under test
 
-## Current Stack (per blueprint, web-first)
+## What this is NOT
 
-- **Frontend:** Next.js 16 (App Router) · TypeScript strict · Tailwind 4 · shadcn-ready primitives (cva + Radix Slot + lucide)
-- **Backend:** Next.js Server Actions + Route Handlers · Supabase (Auth + Realtime + Storage) · Prisma 7 ORM
-- **Database:** Supabase Postgres (pooler URL for runtime, direct URL for migrations)
-- **Forms / Data:** React Hook Form · Zod · TanStack Query · Sonner toasts
-- **Hosting (target):** Vercel + Supabase
-- **CI:** GitHub Actions (see `.github/workflows/`)
+- Not a cloud app or phone app
+- Not for use on networks you do not own or have permission to test
+- Not an auto-connect tool (manual entry by design)
 
-## Commands
+**Read [`docs/LEGAL_AND_ETHICS.md`](docs/LEGAL_AND_ETHICS.md) before use.**
 
-| Script | Purpose |
-| --- | --- |
-| `npm run dev` | Local dev server (Turbopack) |
-| `npm run build` | Production build |
-| `npm run start` | Run production build |
-| `npm run lint` | ESLint |
-| `npm run db:generate` | `prisma generate` |
-| `npm run db:migrate` | `prisma migrate dev` |
-| `npm run db:push` | `prisma db push` (skip migrations) |
-| `npm run db:studio` | Open Prisma Studio |
-
-## Project Layout
-
-```
-wehopon/
-├── app/                    # Next.js App Router
-│   ├── (auth)/             # login / signup (group route)
-│   ├── api/                # route handlers (auth, signout)
-│   ├── dashboard/          # protected dashboard
-│   ├── globals.css         # Tailwind v4 + @theme inline tokens
-│   ├── layout.tsx
-│   └── page.tsx            # landing
-├── components/             # shared UI (Button, etc.)
-├── lib/                    # clients (supabase server/browser), utils
-├── prisma/
-│   └── schema.prisma       # Prisma 7 schema (generic, ready to specialize)
-├── docs/
-│   ├── TECHNICAL_BLUEPRINT.md
-│   └── architecture.html
-├── .planning/              # STATE.md + project tracking
-├── middleware.ts           # Supabase session refresh
-├── prisma.config.ts        # Prisma 7 config (DATABASE_URL + DIRECT_URL)
-├── .env.example
-├── .github/workflows/      # CI
-└── package.json
-```
+---
 
 ## Documentation
 
-- [`docs/TECHNICAL_BLUEPRINT.md`](docs/TECHNICAL_BLUEPRINT.md) — full Discovery / Architecture / Design / Roadmap plan
-- [`docs/architecture.html`](docs/architecture.html) — system architecture diagram
-- [`.planning/STATE.md`](.planning/STATE.md) — current execution state
-- [`MASTER_TODO.md`](MASTER_TODO.md) — project-wide task ledger (use this for cross-agent context)
+| Document | Description |
+| --- | --- |
+| [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) | Full project plan (start here) |
+| [`docs/TECHNICAL_BLUEPRINT.md`](docs/TECHNICAL_BLUEPRINT.md) | Technical design & CLI spec |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Module architecture & data flow |
+| [`docs/PHASE_ROADMAP.md`](docs/PHASE_ROADMAP.md) | Implementation phases & exit criteria |
+| [`docs/HARDWARE.md`](docs/HARDWARE.md) | Adapter & lab hardware guide |
+| [`docs/LEGAL_AND_ETHICS.md`](docs/LEGAL_AND_ETHICS.md) | Authorized use policy |
+| [`docs/architecture.html`](docs/architecture.html) | Visual architecture diagram |
+| [`MASTER_TODO.md`](MASTER_TODO.md) | Live task ledger |
 
-## Security
+---
 
-- **Never commit real secrets.** `.env*` is git-ignored. Use VaultKnox or platform env vars in production.
-- Supabase RLS policies must be enabled before exposing any table to the client.
-- Service-role key (`SUPABASE_SERVICE_ROLE_KEY`) is server-only.
+## Quick start (after Phase 1 implementation)
+
+```bash
+# System dependencies (Ubuntu/Debian example)
+sudo apt install hcxdumptool hcxtools hashcat iw wireshark-common
+
+# Python package
+pip install -e ".[dev]"
+
+# Configure lab allow-list
+cp lab.toml.example lab.toml
+# Edit lab.toml — add your lab AP SSID/BSSID
+
+# Preflight
+sudo handshakelab doctor
+
+# Full workflow
+sudo handshakelab scan -i wlan1
+sudo handshakelab capture -i wlan1 --ssid LAB-AP-01 --channel 6 --duration 120 --ack-authorized
+handshakelab convert latest
+handshakelab crack latest --wordlist ./wordlists/your-qa-list.txt
+handshakelab show latest --reveal
+```
+
+---
+
+## Project layout
+
+```
+.
+├── docs/                    # Project plan & technical documentation
+├── src/handshakelab/        # Python package (CLI + services)
+├── tests/                   # Unit tests (fixtures only, no real captures in git)
+├── lab.toml.example         # Authorized target allow-list template
+├── pyproject.toml
+├── MASTER_TODO.md           # Cross-session task ledger
+└── README.md
+```
+
+---
+
+## Stack
+
+- **Python 3.11+** — orchestration CLI
+- **hcxdumptool / hcxtools** — capture & convert to `.22000`
+- **Hashcat** — offline WPA cracking
+- **SQLite** — local run metadata vault
+
+---
 
 ## License
 
-MIT
+MIT — see [`LICENSE`](LICENSE). Use responsibly and only on authorized networks.

@@ -1,0 +1,25 @@
+# HandshakeLab lab configuration — copy to lab.toml and customize.
+# Never commit lab.toml with real production BSSIDs to a public repo.
+
+[lab]
+name = "Your Lab Bench"
+operator = "your-name"
+require_authorization = true
+
+# Add every AP you are authorized to test.
+[[allowed_targets]]
+ssid = "LAB-AP-01"
+bssid = "AA:BB:CC:DD:EE:FF"
+owner = "Your Company QA"
+authorization_ref = "QA-TICKET-001"
+
+[capture]
+default_adapter = "wlan1"
+default_duration_sec = 120
+# Controlled deauth is disruptive — lab-only, off by default.
+deauth_enabled = false
+
+[crack]
+hashcat_bin = "/usr/bin/hashcat"
+wordlist = "/path/to/your-internal-qa-wordlist.txt"
+workload_profile = 2
