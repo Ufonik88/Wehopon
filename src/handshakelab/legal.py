@@ -33,10 +33,12 @@ def assert_authorized(
         )
 
     if config.find_target(ssid, bssid) is None:
+        if config.ui.trust_operator_ack and ack:
+            return
         hint = f"SSID={ssid}"
         if bssid:
             hint += f", BSSID={bssid}"
         raise AuthorizationError(
             f"Target not in allow-list ({hint}). "
-            f"Add it to {config.path} before capture."
+            f"Add it to {config.path} or enable ui.trust_operator_ack."
         )

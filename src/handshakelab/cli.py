@@ -305,5 +305,24 @@ def report(
     console.print(f"[green]Report written:[/green] {path}")
 
 
+@app.command()
+def ui(
+    ctx: typer.Context,
+    host: Annotated[str, typer.Option(help="Bind host")] = "127.0.0.1",
+    port: Annotated[Optional[int], typer.Option(help="Port")] = None,
+    open_browser: Annotated[bool, typer.Option("--open/--no-open")] = True,
+) -> None:
+    """Launch the local web UI (scan → select → auto-crack)."""
+    from handshakelab.server import run_server
+
+    config = load_config(ctx.obj.get("config"))
+    run_server(
+        host=host,
+        port=port or config.ui.default_port,
+        config_path=ctx.obj.get("config"),
+        open_browser=open_browser,
+    )
+
+
 if __name__ == "__main__":
     app()

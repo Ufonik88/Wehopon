@@ -6,8 +6,21 @@
 > **Linux and macOS supported.**
 
 **Repository:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
-**Status:** v0.1.0 — MVP implemented  
+**Status:** v0.2.0 — Web UI + one-click auto-crack  
 **Docs:** [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md)
+
+## One-click UI (recommended)
+
+```bash
+pip install -e .
+sudo handshakelab ui    # needs sudo for capture; opens http://127.0.0.1:8765
+```
+
+1. Click **Scan** → pick an SSID  
+2. Check **I am authorized…**  
+3. Click **Start Auto-Crack** → password appears in plaintext  
+
+Optional: set `HANDSHAKELAB_AI_API_KEY` for AI-assisted wordlist generation.
 
 ---
 

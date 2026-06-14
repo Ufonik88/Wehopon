@@ -23,3 +23,12 @@ deauth_enabled = false
 hashcat_bin = "/usr/bin/hashcat"
 wordlist = "/path/to/your-internal-qa-wordlist.txt"
 workload_profile = 2
+
+[ui]
+# Web UI: checking the authorization box is enough for ad-hoc lab targets
+trust_operator_ack = true
+default_port = 8765
+
+# Optional AI wordlist (set env HANDSHAKELAB_AI_API_KEY)
+# export HANDSHAKELAB_AI_API_KEY=sk-...
+# export HANDSHAKELAB_AI_BASE_URL=https://api.openai.com/v1

@@ -50,7 +50,48 @@ def crack_run(
             "Wordlist required. Pass --wordlist or set crack.wordlist in lab.toml."
         )
 
-    return _crack_hash(hash_path, wl, record.id, cfg, vault)
+    output = attempt_crack(hash_path, wl, cfg, run_dir=hash_path.parent)
+    vault.save_crack_result(
+        CrackResult(
+            run_id=record.id,
+            cracked_at=datetime.now(UTC).isoformat(),
+            method=output.method,
+            duration_ms=output.duration_ms,
+            passphrase=output.passphrase,
+            success=output.success,
+        )
+    )
+    return output
+
+
+def attempt_crack(
+    hash_path: Path,
+    wordlist: Path,
+    cfg: CrackConfig | None = None,
+    *,
+    run_dir: Path | None = None,
+    stage_label: str | None = None,
+) -> CrackOutput:
+    """Run a single hashcat attempt without touching the vault."""
+    cfg = cfg or CrackConfig()
+    if not wordlist.exists():
+        raise CrackError(f"Wordlist not found: {wordlist}")
+    run_id = hash_path.parent.name
+    output = _crack_hash(
+        hash_path,
+        wordlist,
+        run_id,
+        cfg,
+        run_dir=run_dir or hash_path.parent,
+        stage_label=stage_label,
+    )
+    return CrackOutput(
+        run_id=run_id,
+        success=output.success,
+        passphrase=output.passphrase,
+        duration_ms=output.duration_ms,
+        method=output.method,
+    )
 
 
 def _crack_hash(
@@ -58,13 +99,16 @@ def _crack_hash(
     wordlist: Path,
     run_id: str,
     cfg: CrackConfig,
-    vault: Vault,
+    *,
+    run_dir: Path | None = None,
+    stage_label: str | None = None,
+    vault: Vault | None = None,
 ) -> CrackOutput:
     hashcat = cfg.hashcat_bin if Path(cfg.hashcat_bin).exists() else (which("hashcat") or cfg.hashcat_bin)
     if not which(hashcat) and not Path(hashcat).exists():
         raise CrackError("hashcat not found in PATH.")
 
-    run_dir = hash_path.parent
+    run_dir = run_dir or hash_path.parent
     potfile = run_dir / "hashcat.potfile"
     log_path = run_dir / "crack.log"
 
@@ -84,27 +128,32 @@ def _crack_hash(
         str(wordlist),
     ]
 
-    log_path.write_text(f"# Offline crack\n# {format_cmd(argv)}\n")
+    label = stage_label or wordlist.name
+    with log_path.open("a") as log:
+        log.write(f"\n# Stage: {label}\n# {format_cmd(argv)}\n")
+
     start = time.monotonic()
     result = run(argv, timeout=3600)
     elapsed_ms = int((time.monotonic() - start) * 1000)
-    log_path.write_text(log_path.read_text() + (result.stdout or "") + (result.stderr or ""))
+    with log_path.open("a") as log:
+        log.write((result.stdout or "") + (result.stderr or ""))
 
     passphrase = _parse_potfile(potfile) or _hashcat_show(hashcat, hash_path)
 
     success = passphrase is not None
-    method = f"hashcat:22000:{wordlist.name}"
+    method = f"hashcat:22000:{label}"
 
-    vault.save_crack_result(
-        CrackResult(
-            run_id=run_id,
-            cracked_at=datetime.now(UTC).isoformat(),
-            method=method,
-            duration_ms=elapsed_ms,
-            passphrase=passphrase,
-            success=success,
+    if vault is not None:
+        vault.save_crack_result(
+            CrackResult(
+                run_id=run_id,
+                cracked_at=datetime.now(UTC).isoformat(),
+                method=method,
+                duration_ms=elapsed_ms,
+                passphrase=passphrase,
+                success=success,
+            )
         )
-    )
 
     return CrackOutput(
         run_id=run_id,

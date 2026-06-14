@@ -3,7 +3,7 @@
 > **Product:** HandshakeLab — offline WiFi handshake capture & crack (authorized product testing)  
 > **Repo:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
 > **Last updated:** 2026-06-14  
-> **Version:** 0.1.0
+> **Version:** 0.2.0
 
 ---
 
@@ -18,6 +18,8 @@ Capture WiFi handshake → save locally → crack offline → show password for 
 
 | Area | State | Evidence |
 | --- | --- | --- |
+| Web UI: scan → select → auto-crack → plaintext password | ✅ | `handshakelab ui` + `src/handshakelab/web/` |
+| Enhanced multi-stage crack + optional AI wordlist | ✅ | `crack_enhanced.py`, `ai_wordlist.py` |
 | CLI: doctor, scan, capture, import, convert, crack, show, report, list | ✅ | `src/handshakelab/cli.py` |
 | Linux capture (hcxdumptool + iw monitor) | ✅ | `src/handshakelab/capture.py` |
 | macOS capture (airport sniff + hcxdumptool) | ✅ | `src/handshakelab/capture.py` |

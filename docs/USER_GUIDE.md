@@ -57,7 +57,35 @@ Never commit `lab.toml` or wordlists to git.
 
 ---
 
-## Workflow
+## Web UI (easiest)
+
+```bash
+pip install -e .
+sudo handshakelab ui
+```
+
+Opens **http://127.0.0.1:8765** in your browser:
+
+1. **Scan** — lists nearby SSIDs  
+2. **Click a network** to select it  
+3. Check **I am authorized to test this network**  
+4. **Start Auto-Crack** — automates capture → convert → multi-stage Hashcat → plaintext password  
+
+Progress streams live. Copy button when done.
+
+### AI-assisted cracking (optional)
+
+```bash
+export HANDSHAKELAB_AI_API_KEY=your-openai-compatible-key
+# optional: export HANDSHAKELAB_AI_BASE_URL=...
+sudo handshakelab ui
+```
+
+AI generates smart password *candidates* from the SSID context (not magic hash cracking). Hashcat still does the actual offline crack.
+
+---
+
+## CLI workflow
 
 ### 1. Preflight
 

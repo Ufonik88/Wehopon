@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HandshakeLab</title>
+  <link rel="stylesheet" href="/assets/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">◈</span>
+        <div>
+          <h1>HandshakeLab</h1>
+          <p class="tagline">Scan → Capture → Crack offline → Reveal</p>
+        </div>
+      </div>
+      <div class="status-pill" id="healthStatus">Checking…</div>
+    </header>
+
+    <section class="card step-card">
+      <div class="step-header">
+        <span class="step-num">1</span>
+        <h2>Scan networks</h2>
+      </div>
+      <div class="row">
+        <label>
+          Interface
+          <select id="ifaceSelect"></select>
+        </label>
+        <button id="scanBtn" class="btn btn-primary">Scan</button>
+      </div>
+      <p class="hint" id="scanHint">Select your WiFi adapter (wlan1 / en0) and click Scan.</p>
+    </section>
+
+    <section class="card step-card">
+      <div class="step-header">
+        <span class="step-num">2</span>
+        <h2>Select target</h2>
+      </div>
+      <div id="networkList" class="network-list empty">
+        <p class="placeholder">No networks yet — run a scan.</p>
+      </div>
+    </section>
+
+    <section class="card step-card" id="actionCard" hidden>
+      <div class="step-header">
+        <span class="step-num">3</span>
+        <h2>Auto-crack</h2>
+      </div>
+      <div class="selected-target" id="selectedTarget"></div>
+      <label class="checkbox-row">
+        <input type="checkbox" id="ackCheck" />
+        <span>I am authorized to test this network (lab / owned equipment only)</span>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="aiCheck" checked />
+        <span>Use AI-assisted wordlist <small id="aiStatus">(checking…)</small></span>
+      </label>
+      <button id="startBtn" class="btn btn-accent btn-large" disabled>
+        Start Auto-Crack
+      </button>
+    </section>
+
+    <section class="card progress-card" id="progressCard" hidden>
+      <h2>Progress</h2>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <p class="progress-stage" id="progressStage">—</p>
+      <p class="progress-msg" id="progressMsg">—</p>
+      <pre class="log" id="logBox"></pre>
+    </section>
+
+    <section class="card result-card" id="resultCard" hidden>
+      <h2>Password</h2>
+      <div class="password-box" id="passwordBox">—</div>
+      <p class="result-meta" id="resultMeta"></p>
+      <button id="copyBtn" class="btn btn-ghost">Copy password</button>
+    </section>
+
+    <footer class="footer">
+      Authorized product testing only · Offline crack — AP is never brute-forced online
+    </footer>
+  </div>
+  <script src="/assets/app.js"></script>
+</body>
+</html>

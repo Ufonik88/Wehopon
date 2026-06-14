@@ -23,6 +23,12 @@ class CaptureConfig:
 
 
 @dataclass
+class UiConfig:
+    trust_operator_ack: bool = True
+    default_port: int = 8765
+
+
+@dataclass
 class CrackConfig:
     hashcat_bin: str = "hashcat"
     wordlist: str = ""
@@ -38,6 +44,7 @@ class LabConfig:
     allowed_targets: list[AllowedTarget] = field(default_factory=list)
     capture: CaptureConfig = field(default_factory=CaptureConfig)
     crack: CrackConfig = field(default_factory=CrackConfig)
+    ui: UiConfig = field(default_factory=UiConfig)
 
     def find_target(self, ssid: str, bssid: str | None = None) -> AllowedTarget | None:
         ssid_lower = ssid.lower()
@@ -66,6 +73,7 @@ def load_config(path: Path | None) -> LabConfig:
     lab = raw.get("lab", {})
     capture_raw = raw.get("capture", {})
     crack_raw = raw.get("crack", {})
+    ui_raw = raw.get("ui", {})
 
     targets: list[AllowedTarget] = []
     for entry in raw.get("allowed_targets", []):
@@ -93,5 +101,9 @@ def load_config(path: Path | None) -> LabConfig:
             hashcat_bin=crack_raw.get("hashcat_bin", "hashcat"),
             wordlist=crack_raw.get("wordlist", ""),
             workload_profile=int(crack_raw.get("workload_profile", 2)),
+        ),
+        ui=UiConfig(
+            trust_operator_ack=bool(ui_raw.get("trust_operator_ack", True)),
+            default_port=int(ui_raw.get("default_port", 8765)),
         ),
     )

@@ -29,6 +29,17 @@ def airport_path() -> Path | None:
     return path if path.exists() else None
 
 
+def list_interfaces() -> list[str]:
+    if plat.is_linux():
+        net = Path("/sys/class/net")
+        return sorted(p.name for p in net.iterdir() if p.is_dir() and p.name != "lo")
+    if plat.is_macos():
+        result = run(["ifconfig", "-l"])
+        if result.ok:
+            return [i for i in result.stdout.split() if i != "lo"]
+    return []
+
+
 def interface_exists(iface: str) -> bool:
     if plat.is_linux():
         return Path(f"/sys/class/net/{iface}").exists()
