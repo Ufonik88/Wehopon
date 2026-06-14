@@ -18,7 +18,7 @@ class AllowedTarget:
 @dataclass
 class CaptureConfig:
     default_adapter: str = "wlan0"
-    default_duration_sec: int = 120
+    default_duration_sec: int = 300
     deauth_enabled: bool = False
 
 

@@ -19,6 +19,14 @@
       <div class="status-pill" id="healthStatus">Checking…</div>
     </header>
 
+    <section class="card info-banner">
+      <strong>You never join the WiFi network.</strong>
+      HandshakeLab includes a built-in sniffer (like Wireshark) that passively captures
+      authentication packets from the air. You do <em>not</em> need the password to capture.
+      When any phone, laptop, or device connects to the target network, we grab the handshake
+      and crack it offline.
+    </section>
+
     <section class="card step-card">
       <div class="step-header">
         <span class="step-num">1</span>
@@ -68,6 +76,11 @@
       <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
       <p class="progress-stage" id="progressStage">—</p>
       <p class="progress-msg" id="progressMsg">—</p>
+      <div class="sniffer-stats" id="snifferStats" hidden>
+        <div class="stat"><span class="stat-val" id="statPackets">0</span><span class="stat-label">Packets</span></div>
+        <div class="stat"><span class="stat-val" id="statEapol">0</span><span class="stat-label">EAPOL</span></div>
+        <div class="stat"><span class="stat-val" id="statBackend">—</span><span class="stat-label">Engine</span></div>
+      </div>
       <pre class="log" id="logBox"></pre>
     </section>
 

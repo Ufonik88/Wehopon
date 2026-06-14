@@ -240,26 +240,6 @@ def _freq_to_channel(freq_mhz: int) -> int | None:
 
 
 def validate_eapol(capture_path: Path) -> bool:
-    tshark = which("tshark")
-    if tshark:
-        result = run(
-            [tshark, "-r", str(capture_path), "-Y", "eapol", "-c", "1"],
-            timeout=30,
-        )
-        return result.ok and bool(result.stdout.strip())
+    from handshakelab.eapol import has_eapol_handshake
 
-    # Fallback: attempt conversion and check for non-empty hash file
-    hcx = which("hcxpcapngtool")
-    if not hcx:
-        return capture_path.stat().st_size > 0
-
-    tmp = capture_path.parent / ".eapol_check.22000"
-    try:
-        result = run([hcx, "-o", str(tmp), str(capture_path)], timeout=60)
-        if not result.ok or not tmp.exists():
-            return False
-        content = tmp.read_text(errors="ignore").strip()
-        return bool(content)
-    finally:
-        if tmp.exists():
-            tmp.unlink()
+    return has_eapol_handshake(capture_path)

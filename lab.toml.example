@@ -4,7 +4,8 @@
 [lab]
 name = "Your Lab Bench"
 operator = "your-name"
-require_authorization = true
+# false = any scanned SSID can be tested after UI checkbox (password unknown is OK)
+require_authorization = false
 
 # Add every AP you are authorized to test.
 [[allowed_targets]]
@@ -15,7 +16,7 @@ authorization_ref = "QA-TICKET-001"
 
 [capture]
 default_adapter = "wlan1"
-default_duration_sec = 120
+default_duration_sec = 300
 # Controlled deauth is disruptive — lab-only, off by default.
 deauth_enabled = false
 

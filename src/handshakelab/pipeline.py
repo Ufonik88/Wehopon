@@ -42,6 +42,9 @@ class Job:
     method: str | None = None
     error: str | None = None
     logs: list[str] = field(default_factory=list)
+    capture_packets: int = 0
+    capture_eapol: int = 0
+    capture_backend: str | None = None
     created_at: str = field(default_factory=lambda: datetime.now(UTC).isoformat())
 
     def to_dict(self) -> dict[str, Any]:
@@ -59,6 +62,9 @@ class Job:
             "method": self.method,
             "error": self.error,
             "logs": self.logs[-50:],
+            "capture_packets": self.capture_packets,
+            "capture_eapol": self.capture_eapol,
+            "capture_backend": self.capture_backend,
             "created_at": self.created_at,
         }
 
@@ -120,7 +126,23 @@ def run_auto_pipeline(
         jobs.update(job_id, status=JobStatus.RUNNING, stage="auth", message="Checking authorization…", percent=5)
         progress("auth", f"Target: {network.ssid}", 8)
 
-        jobs.update(job_id, stage="capture", message="Capturing handshake (please wait)…", percent=12)
+        jobs.update(
+            job_id,
+            stage="capture",
+            message="Built-in sniffer listening (you do NOT join the network)…",
+            percent=12,
+        )
+
+        def on_capture_tick(analysis, msg: str) -> None:
+            jobs.update(
+                job_id,
+                capture_packets=analysis.total_packets,
+                capture_eapol=analysis.eapol_frames,
+                message=msg,
+                percent=min(12 + int(23 * (analysis.eapol_frames / 4)), 34),
+            )
+            jobs.append_log(job_id, msg)
+
         cap = capture_handshake(
             iface=iface,
             ssid=network.ssid,
@@ -129,9 +151,22 @@ def run_auto_pipeline(
             channel=network.channel,
             duration_sec=duration_sec or cfg.capture.default_duration_sec,
             ack_authorized=ack_authorized,
+            on_tick=on_capture_tick,
         )
-        jobs.update(job_id, run_id=cap.run_id, percent=35, message="Handshake captured")
-        progress("capture", f"Saved {cap.capture_path.name}", 35)
+        jobs.update(
+            job_id,
+            run_id=cap.run_id,
+            percent=35,
+            message="Handshake captured",
+            capture_packets=cap.analysis.total_packets,
+            capture_eapol=cap.analysis.eapol_frames,
+            capture_backend=cap.backend,
+        )
+        progress(
+            "capture",
+            f"{cap.backend}: {cap.analysis.eapol_frames} EAPOL frames in {cap.analysis.total_packets} packets",
+            35,
+        )
 
         jobs.update(job_id, stage="convert", message="Converting to Hashcat format…", percent=42)
         conv = convert_run(cap.run_id)

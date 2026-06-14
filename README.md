@@ -6,7 +6,7 @@
 > **Linux and macOS supported.**
 
 **Repository:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
-**Status:** v0.2.0 — Web UI + one-click auto-crack  
+**Status:** v0.3.0 — Built-in sniffer + Web UI auto-crack
 **Docs:** [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md)
 
 ## One-click UI (recommended)
@@ -16,9 +16,11 @@ pip install -e .
 sudo handshakelab ui    # needs sudo for capture; opens http://127.0.0.1:8765
 ```
 
-1. Click **Scan** → pick an SSID  
+1. Click **Scan** → pick an SSID (password unknown is fine)  
 2. Check **I am authorized…**  
-3. Click **Start Auto-Crack** → password appears in plaintext  
+3. Click **Start Auto-Crack** → built-in sniffer captures handshake → crack → plaintext password  
+
+**You never join the WiFi.** We passively sniff the air while any device connects to that AP.
 
 Optional: set `HANDSHAKELAB_AI_API_KEY` for AI-assisted wordlist generation.
 

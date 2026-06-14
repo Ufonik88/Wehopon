@@ -66,12 +66,21 @@ sudo handshakelab ui
 
 Opens **http://127.0.0.1:8765** in your browser:
 
-1. **Scan** — lists nearby SSIDs  
+1. **Scan** — lists nearby SSIDs (password unknown is expected)  
 2. **Click a network** to select it  
 3. Check **I am authorized to test this network**  
-4. **Start Auto-Crack** — automates capture → convert → multi-stage Hashcat → plaintext password  
+4. **Start Auto-Crack** — built-in sniffer captures handshake → convert → crack → plaintext password  
 
-Progress streams live. Copy button when done.
+### You do NOT connect to the WiFi
+
+HandshakeLab ships a **built-in passive sniffer** (tcpdump / hcxdumptool / macOS airport).
+It listens on the air like Wireshark. When **any** phone, TV, or laptop joins the target
+network, we capture the WPA handshake — then crack it offline. You never type a password
+to "connect" during capture.
+
+If capture fails: wait until a device connects to that AP, or retry with longer listen time.
+
+Progress streams live with packet/EAPOL counters. Copy button when done.
 
 ### AI-assisted cracking (optional)
 

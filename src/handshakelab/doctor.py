@@ -7,7 +7,7 @@ from pathlib import Path
 
 from handshakelab.config import load_config
 from handshakelab.util import platform as plat
-from handshakelab.util.proc import run
+from handshakelab.util.proc import run, which
 from handshakelab.util.wifi import (
     airport_path,
     has_root,
@@ -46,13 +46,21 @@ def run_doctor(
         path = tools.get(name)
         checks.append(Check(name, bool(path), path or "not found in PATH"))
 
-    # Capture tool: hcxdumptool OR macOS airport
-    capture_ok = bool(tools.get("hcxdumptool"))
-    capture_detail = tools.get("hcxdumptool") or "not found"
-    if plat.is_macos() and airport_path():
-        capture_ok = True
-        capture_detail = f"hcxdumptool={tools.get('hcxdumptool') or 'n/a'}, airport={airport_path()}"
-    checks.append(Check("capture_backend", capture_ok, capture_detail))
+    tcpdump = which("tcpdump")
+    if tcpdump:
+        checks.append(Check("tcpdump", True, f"{tcpdump} (built-in sniffer)"))
+
+    capture_ok = bool(tools.get("hcxdumptool") or tcpdump)
+    capture_detail = ", ".join(
+        x
+        for x in [
+            f"tcpdump={tcpdump or 'n/a'}",
+            f"hcxdumptool={tools.get('hcxdumptool') or 'n/a'}",
+            f"airport={airport_path() or 'n/a'}" if plat.is_macos() else None,
+        ]
+        if x
+    )
+    checks.append(Check("capture_backend", capture_ok, capture_detail or "install tcpdump"))
 
     if tools.get("tshark"):
         checks.append(Check("tshark", True, tools["tshark"]))

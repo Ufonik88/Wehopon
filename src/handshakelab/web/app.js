@@ -118,7 +118,11 @@ $("startBtn").addEventListener("click", async () => {
   $("progressCard").hidden = false;
   $("resultCard").hidden = true;
   $("logBox").textContent = "";
-  setProgress(0, "starting", "Launching auto-crack pipeline…");
+  $("snifferStats").hidden = false;
+  $("statPackets").textContent = "0";
+  $("statEapol").textContent = "0";
+  $("statBackend").textContent = "…";
+  setProgress(0, "starting", "Sniffer starting — listening for handshake (no WiFi join needed)…");
 
   try {
     const job = await api("/api/autocrack", {
@@ -145,6 +149,13 @@ function watchJob(jobId) {
   es.onmessage = (ev) => {
     const job = JSON.parse(ev.data);
     setProgress(job.percent, job.stage, job.message);
+
+    if (job.stage === "capture" || job.capture_packets > 0) {
+      $("snifferStats").hidden = false;
+      $("statPackets").textContent = job.capture_packets ?? 0;
+      $("statEapol").textContent = job.capture_eapol ?? 0;
+      if (job.capture_backend) $("statBackend").textContent = job.capture_backend;
+    }
 
     if (job.new_logs && job.new_logs.length) {
       const box = $("logBox");
