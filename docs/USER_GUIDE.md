@@ -1,5 +1,8 @@
 # HandshakeLab User Guide
 
+> **Project status (done vs remaining):** [`PROJECT_STATUS.md`](PROJECT_STATUS.md)  
+> **Bench verification:** [`HIL_CHECKLIST.md`](HIL_CHECKLIST.md)
+
 ## Install
 
 ### Linux (Debian/Ubuntu)

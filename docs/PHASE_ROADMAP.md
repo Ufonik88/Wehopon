@@ -1,160 +1,118 @@
 # HandshakeLab — Phase Roadmap
 
-## Phase 0 — Planning & documentation ✅ (current)
-
-**Goal:** Replace wrong travel-app plan with accurate WiFi audit plan.
-
-**Deliverables:**
-
-- [x] `docs/PROJECT_PLAN.md`
-- [x] `docs/TECHNICAL_BLUEPRINT.md`
-- [x] `docs/ARCHITECTURE.md`
-- [x] `docs/LEGAL_AND_ETHICS.md`
-- [x] `docs/HARDWARE.md`
-- [x] `docs/PHASE_ROADMAP.md`
-- [x] `MASTER_TODO.md` rewritten
-- [x] Python package scaffold
-
-**Exit criteria:** Docs pushed to GitHub; user confirms plan matches brief.
+**Current version:** 0.3.0  
+**Current phase:** 8 — Bench verification (user)  
+**Status overview:** [`PROJECT_STATUS.md`](PROJECT_STATUS.md)
 
 ---
 
-## Phase 1 — Lab toolchain bootstrap
+## Phase 0 — Planning & documentation ✅
 
-**Goal:** Bench machine can run external tools; `handshakelab doctor` passes.
-
-**Tasks:**
-
-- [ ] Document apt/brew packages: `hcxdumptool`, `hcxtools`, `hashcat`, `iw`, `wireshark-common`
-- [ ] Implement `doctor.py` with version checks
-- [ ] Add `lab.toml.example`
-- [ ] Verify adapter monitor mode on bench hardware
-
-**Exit criteria:**
-
-```bash
-sudo handshakelab doctor
-# All checks green
-```
+- [x] Replace wrong travel-app plan
+- [x] Full docs in `docs/`
+- [x] `MASTER_TODO.md`, `README.md`, blueprint, architecture, legal, hardware
 
 ---
 
-## Phase 2 — Capture pipeline
+## Phase 1 — Lab toolchain bootstrap ✅
 
-**Goal:** Authorized capture saves valid `capture.pcapng`.
-
-**Tasks:**
-
-- [ ] `config.py` + `legal.py` authorization gate
-- [ ] `scan.py` passive SSID/BSSID listing
-- [ ] `capture.py` hcxdumptool wrapper
-- [ ] Monitor mode set/restore helpers
-- [ ] EAPOL validation via tshark filter
-
-**Exit criteria:**
-
-```bash
-sudo handshakelab capture -i wlan1 --ssid LAB-TEST --channel 6 --duration 120 --ack-authorized
-# capture.pcapng exists, EAPOL frames confirmed
-```
+- [x] `handshakelab doctor`
+- [x] `lab.toml.example`
+- [x] Package docs in `USER_GUIDE.md`
 
 ---
 
-## Phase 3 — Convert + vault
+## Phase 2 — Capture pipeline ✅
 
-**Goal:** PCAP converts to `.22000`; metadata in SQLite.
-
-**Tasks:**
-
-- [ ] `vault.py` run directories + DB migrations
-- [ ] `convert.py` hcxpcapngtool integration
-- [ ] `meta.json` with SHA-256 of capture
-- [ ] `handshakelab list`
-
-**Exit criteria:**
-
-```bash
-handshakelab convert latest
-# crack.22000 has ≥1 hash; vault status=converted
-```
+- [x] `config.py` + `legal.py` authorization gate
+- [x] Passive scan (Linux + macOS)
+- [x] `capture.py` + `import` command
+- [x] Monitor mode helpers (Linux)
 
 ---
 
-## Phase 4 — Offline crack engine
+## Phase 3 — Convert + vault ✅
 
-**Goal:** Hashcat cracks lab AP with known weak password; zero online auth attempts.
-
-**Tasks:**
-
-- [ ] `crack.py` hashcat wrapper
-- [ ] Potfile parser
-- [ ] Wordlist + rules path from config
-- [ ] Progress logging to `crack.log`
-
-**Exit criteria:**
-
-```bash
-handshakelab crack latest --wordlist ./wordlists/lab-known.txt
-handshakelab show latest --reveal
-# Correct passphrase printed
-```
+- [x] `vault.py` — SQLite + artifact folders
+- [x] `convert.py` — hcxpcapngtool → `.22000`
+- [x] `handshakelab list`
 
 ---
 
-## Phase 5 — CLI polish + QA reports
+## Phase 4 — Offline crack engine ✅
 
-**Goal:** Single workflow usable by QA without reading source code.
-
-**Tasks:**
-
-- [ ] `report.py` Markdown + JSON export
-- [ ] Rich terminal output (progress, colors, masked secrets)
-- [ ] `HIL_CHECKLIST.md` for hardware releases
-- [ ] User-facing `docs/USER_GUIDE.md`
-
-**Exit criteria:** QA engineer completes full run from README quick start.
+- [x] `crack.py` — Hashcat wrapper
+- [x] Potfile parser, crack logging
+- [x] Zero online auth attempts (offline only)
 
 ---
 
-## Phase 6 — Optional local web UI
+## Phase 5 — CLI polish + QA reports ✅
 
-**Goal:** Browser dashboard on `127.0.0.1` for viewing runs (no capture from browser).
-
-**Tasks:**
-
-- [ ] FastAPI app listing vault runs
-- [ ] Download artifacts
-- [ ] Reveal passphrase behind confirmation modal
-
-**Exit criteria:** `handshakelab serve` shows run table locally.
+- [x] `report.py` — Markdown + JSON
+- [x] Rich CLI output
+- [x] `docs/USER_GUIDE.md`
 
 ---
 
-## Phase 7 — Packaging & CI
+## Phase 6 — Web UI + auto-crack ✅ (v0.2.0)
 
-**Goal:** Reproducible installs; lint in CI; manual HIL for releases.
+- [x] FastAPI server on 127.0.0.1:8765
+- [x] Scan button, network selection
+- [x] One-click auto-crack pipeline
+- [x] SSE live progress
+- [x] Plaintext password + copy
+- [x] Enhanced multi-stage crack
+- [x] Optional AI wordlist
 
-**Tasks:**
-
-- [ ] `pyproject.toml` extras `[dev]`
-- [ ] GitHub Actions: ruff + pytest (unit only)
-- [ ] Tag v0.1.0 MVP
-
-**Exit criteria:** `pip install -e .` on clean Ubuntu VM; CI green.
+**Exit:** `sudo handshakelab ui` → scan → select → auto-crack → password shown.
 
 ---
 
-## Timeline estimate
+## Phase 7 — Built-in sniffer ✅ (v0.3.0)
 
-| Phase | Effort |
+- [x] `sniffer.py` — tcpdump / hcxdumptool / airport backends
+- [x] `eapol.py` — handshake detection without Wireshark GUI
+- [x] Live packet/EAPOL counters in UI
+- [x] 300s default capture window
+- [x] “No WiFi join required” workflow documented
+
+**Exit:** Passive capture works; EAPOL detected when client joins AP.
+
+---
+
+## Phase 8 — Bench verification ⬜ (current)
+
+**Goal:** Prove end-to-end on real hardware.
+
+| Task | Owner | Status |
+| --- | --- | --- |
+| Install tcpdump + hcxtools + hashcat | User | ⬜ |
+| `sudo handshakelab doctor` green | User | ⬜ |
+| USB monitor-mode adapter (Linux) | User | ⬜ |
+| E2E auto-crack on owned lab AP | User | ⬜ |
+| Complete `docs/HIL_CHECKLIST.md` | User | ⬜ |
+| Tag GitHub release v0.3.0 | Agent | ⬜ |
+
+---
+
+## Phase 9 — Future enhancements ⬜
+
+| Task | Priority |
 | --- | --- |
-| 0 | 1–2 days |
-| 1 | 1 day |
-| 2 | 3–5 days |
-| 3 | 2 days |
-| 4 | 2–3 days |
-| 5 | 2 days |
-| 6 | 3–5 days (optional) |
-| 7 | 2–3 days |
+| GPU hashcat detection in doctor | Low |
+| WPA3-SAE documentation + tooling | Low |
+| Controlled deauth module (lab-only, off by default) | Low |
+| Artifact download in web UI | Low |
+| `.deb` / Homebrew formula | Low |
+| Rename repo `Wehopon` → `HandshakeLab` | Low |
 
-**MVP (Phases 1–5):** ~2–3 weeks part-time.
+---
+
+## Timeline (actual)
+
+| Phase | Completed |
+| --- | --- |
+| 0–7 | 2026-06-14 (same day — v0.1.0 → v0.3.0) |
+| 8 | Pending user bench test |
+| 9 | Backlog |

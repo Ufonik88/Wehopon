@@ -31,7 +31,7 @@ Optional: set `HANDSHAKELAB_AI_API_KEY` for AI-assisted wordlist generation.
 ### Linux
 
 ```bash
-sudo apt install hcxdumptool hcxtools hashcat iw wireshark-common
+sudo apt install tcpdump hcxdumptool hcxtools hashcat iw
 pip install -e .
 cp lab.toml.example lab.toml   # add your authorized lab APs
 
@@ -45,7 +45,7 @@ handshakelab show latest --reveal
 ### macOS
 
 ```bash
-brew install hcxtools hashcat wireshark
+brew install tcpdump hcxtools hashcat
 pip install -e .
 cp lab.toml.example lab.toml
 
@@ -66,6 +66,7 @@ handshakelab show latest --reveal
 
 | Command | Description |
 | --- | --- |
+| `ui` | **Launch web UI** (scan → auto-crack → password) |
 | `doctor` | Preflight toolchain + adapter checks |
 | `scan` | Passive WiFi scan |
 | `capture` | Live handshake capture (sudo) |
@@ -78,15 +79,27 @@ handshakelab show latest --reveal
 
 ---
 
+## What's done vs what's left
+
+See **[`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)** for the full breakdown.
+
+**Done (v0.3.0):** Web UI, built-in sniffer, EAPOL detection, auto-crack pipeline, enhanced offline crack, AI wordlist option, CLI, tests, CI.
+
+**Still needed (your side):** Install `tcpdump` + `hcxtools` + `hashcat`, USB adapter with monitor mode (Linux), end-to-end test on a lab AP you own, complete [`docs/HIL_CHECKLIST.md`](docs/HIL_CHECKLIST.md).
+
+---
+
 ## Documentation
 
 | Doc | Description |
 | --- | --- |
+| [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) | **What's done + what's left** |
 | [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) | Install & workflow (Linux + Mac) |
+| [`docs/HIL_CHECKLIST.md`](docs/HIL_CHECKLIST.md) | Bench verification checklist |
 | [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) | Full project plan |
 | [`docs/TECHNICAL_BLUEPRINT.md`](docs/TECHNICAL_BLUEPRINT.md) | Technical design |
 | [`docs/LEGAL_AND_ETHICS.md`](docs/LEGAL_AND_ETHICS.md) | **Read before use** |
-| [`MASTER_TODO.md`](MASTER_TODO.md) | Task ledger |
+| [`MASTER_TODO.md`](MASTER_TODO.md) | Live task ledger |
 
 ---
 

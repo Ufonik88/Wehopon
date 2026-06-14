@@ -1,29 +1,45 @@
 # HandshakeLab Current State
 
-**Current Phase:** 5 — MVP implemented (v0.1.0); HIL verification next  
+**Version:** 0.3.0  
+**Current Phase:** 8 — Bench verification (user must test on real hardware)  
 **Last Updated:** 2026-06-14  
-**Product:** HandshakeLab (WiFi handshake capture + offline crack, Linux + macOS)
+**Product:** HandshakeLab — passive WiFi capture + offline crack (Linux + macOS)
 
-## Critical context
+---
 
-The repository previously contained a **WeHopOn travel planner** (Next.js + Supabase). That was built from the **wrong brief**. The project has been **completely redesigned** around the user's actual requirement:
+## Summary
 
-> Capture WiFi handshake → save locally → crack offline → show password for manual device join.
+Software is **feature-complete for v0.3.0**. All core code, web UI, built-in sniffer, enhanced cracking, tests, and documentation are implemented and pushed to GitHub.
 
-## Completed (Phase 0)
+**What remains is user-side:** install system tools, verify on real WiFi adapter + lab AP, complete HIL checklist.
 
-- Full planning documentation in `docs/`
-- `MASTER_TODO.md` rewritten
-- Python package scaffold added
-- Next.js travel skeleton removed
+---
 
-## Next up
+## Completed
 
-- User HIL test on lab AP (Linux and/or Mac)
-- Optional Phase 6 local web UI
+- Built-in passive sniffer (`sniffer.py`) — tcpdump / hcxdumptool / macOS airport
+- EAPOL detection (`eapol.py`) — no Wireshark GUI required
+- Web UI (`handshakelab ui`) — scan, select, one-click auto-crack, plaintext password
+- Enhanced multi-stage offline crack + optional AI wordlist
+- Full CLI + SQLite vault + CI (17 tests green)
+- Comprehensive docs including `docs/PROJECT_STATUS.md`
+
+---
+
+## Next (user action required)
+
+1. Install: `tcpdump`, `hcxtools`, `hashcat`
+2. Run: `sudo handshakelab doctor -i <adapter>`
+3. Run: `sudo handshakelab ui` → test on **lab AP you own**
+4. Complete: `docs/HIL_CHECKLIST.md`
+
+---
 
 ## Key docs
 
-- [`docs/PROJECT_PLAN.md`](../docs/PROJECT_PLAN.md)
-- [`docs/TECHNICAL_BLUEPRINT.md`](../docs/TECHNICAL_BLUEPRINT.md)
-- [`MASTER_TODO.md`](../MASTER_TODO.md)
+| Doc | Purpose |
+| --- | --- |
+| [`docs/PROJECT_STATUS.md`](../docs/PROJECT_STATUS.md) | **What’s done + what’s left** |
+| [`docs/USER_GUIDE.md`](../docs/USER_GUIDE.md) | Install & workflow |
+| [`docs/HIL_CHECKLIST.md`](../docs/HIL_CHECKLIST.md) | Bench verification |
+| [`MASTER_TODO.md`](../MASTER_TODO.md) | Live task ledger |

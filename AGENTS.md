@@ -2,46 +2,56 @@
 
 ## Project
 
-**HandshakeLab** — offline WiFi handshake capture & crack for **authorized product testing only**.
+**HandshakeLab** — passive WiFi handshake capture + offline crack for **authorized product testing**.
 
-Repository: `github.com/Ufonik88/Wehopon` (product name HandshakeLab; repo rename TBD).
+**Repo:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
+**Version:** 0.3.0  
+**Status doc:** [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — **read this first** for done vs remaining work.
+
+## Original brief
+
+Capture handshake passively (no WiFi join) → save locally → crack offline → show plaintext password.
 
 ## Read first (every session)
 
-1. [`MASTER_TODO.md`](MASTER_TODO.md) — live task ledger
-2. [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) — what we are building
+1. [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — what's built, what's left
+2. [`MASTER_TODO.md`](MASTER_TODO.md) — live task ledger
 3. [`docs/LEGAL_AND_ETHICS.md`](docs/LEGAL_AND_ETHICS.md) — authorized use only
-
-## What we are NOT building
-
-- Travel planner / WeHopOn (removed — wrong brief)
-- Next.js web app for capture (impossible — needs Linux monitor mode + root)
-- Online brute force against APs
-- Auto-join to cracked networks
 
 ## Stack
 
-- Python 3.11+ CLI (`typer`, `rich`)
-- External tools: `hcxdumptool`, `hcxpcapngtool`, `hashcat`, `iw`
-- SQLite vault for run metadata
-- Linux only for capture
+- **Python 3.11+** — Typer CLI, FastAPI web UI
+- **Built-in sniffer** — tcpdump, hcxdumptool, macOS airport (`sniffer.py`)
+- **EAPOL detection** — `eapol.py` (no Wireshark GUI required)
+- **Crack** — Hashcat offline + enhanced stages + optional AI wordlist
+- **Vault** — SQLite + filesystem artifacts
+- **Platforms** — Linux + macOS
 
-## Implementation order
+## Key commands
 
-Follow [`docs/PHASE_ROADMAP.md`](docs/PHASE_ROADMAP.md):
+```bash
+sudo handshakelab ui      # recommended — web UI
+sudo handshakelab doctor  # preflight
+handshakelab scan -i wlan1
+```
 
-1. `doctor` → 2. `capture` → 3. `convert` → 4. `crack` → 5. `show` / `report`
+## What is done (v0.3.0)
+
+- Full CLI, web UI, auto-crack pipeline, built-in sniffer, enhanced crack, tests, CI, docs
+
+## What remains
+
+- User bench verification (`docs/HIL_CHECKLIST.md`)
+- Future: GPU doctor, WPA3, packaging, repo rename
 
 ## Rules
 
-- Never commit captures, wordlists, passphrases, or `lab.toml` with real targets.
-- Always enforce `lab.toml` allow-list before capture code runs.
-- Offline crack only — never call `wpa_supplicant` / `nmcli connect` with guessed passwords.
-- Verify with real command output before marking tasks done in `MASTER_TODO.md`.
+- Never commit captures, wordlists, passphrases, or real `lab.toml`
+- Offline crack only — never online brute force against AP
+- User does NOT join WiFi to capture — passive sniff only
+- Verify with command output before marking tasks done
 
 ## GitHub CLI on this machine
-
-`gh` may be shadowed by a Python package. Use:
 
 ```bash
 export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
