@@ -1,100 +1,84 @@
 # HandshakeLab
 
-**Offline WiFi handshake capture & crack workstation for authorized product testing.**
+**Offline WiFi handshake capture & crack for authorized product testing.**
 
 > Capture once → save locally → crack offline → reveal password → manually join the device under test.  
-> No repeated failed logins against the AP.
+> **Linux and macOS supported.**
 
 **Repository:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
-**Status:** Phase 0 — Planning complete; implementation starting Phase 1  
-**Platform:** Linux + monitor-mode USB WiFi adapter
+**Status:** v0.1.0 — MVP implemented  
+**Docs:** [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md)
 
 ---
 
-## What this is
+## Quick start
 
-HandshakeLab helps QA and security testers validate WiFi devices **on lab networks they own or are authorized to test**:
-
-1. **Capture** a WPA handshake or PMKID from the air
-2. **Save** `capture.pcapng` and a Hashcat-ready `.22000` hash file
-3. **Crack offline** with Hashcat (CPU/GPU) — the router is not hammered with wrong passwords
-4. **Show** the recovered passphrase so you type it manually into the device under test
-
-## What this is NOT
-
-- Not a cloud app or phone app
-- Not for use on networks you do not own or have permission to test
-- Not an auto-connect tool (manual entry by design)
-
-**Read [`docs/LEGAL_AND_ETHICS.md`](docs/LEGAL_AND_ETHICS.md) before use.**
-
----
-
-## Documentation
-
-| Document | Description |
-| --- | --- |
-| [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) | Full project plan (start here) |
-| [`docs/TECHNICAL_BLUEPRINT.md`](docs/TECHNICAL_BLUEPRINT.md) | Technical design & CLI spec |
-| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Module architecture & data flow |
-| [`docs/PHASE_ROADMAP.md`](docs/PHASE_ROADMAP.md) | Implementation phases & exit criteria |
-| [`docs/HARDWARE.md`](docs/HARDWARE.md) | Adapter & lab hardware guide |
-| [`docs/LEGAL_AND_ETHICS.md`](docs/LEGAL_AND_ETHICS.md) | Authorized use policy |
-| [`docs/architecture.html`](docs/architecture.html) | Visual architecture diagram |
-| [`MASTER_TODO.md`](MASTER_TODO.md) | Live task ledger |
-
----
-
-## Quick start (after Phase 1 implementation)
+### Linux
 
 ```bash
-# System dependencies (Ubuntu/Debian example)
 sudo apt install hcxdumptool hcxtools hashcat iw wireshark-common
+pip install -e .
+cp lab.toml.example lab.toml   # add your authorized lab APs
 
-# Python package
-pip install -e ".[dev]"
-
-# Configure lab allow-list
-cp lab.toml.example lab.toml
-# Edit lab.toml — add your lab AP SSID/BSSID
-
-# Preflight
-sudo handshakelab doctor
-
-# Full workflow
-sudo handshakelab scan -i wlan1
-sudo handshakelab capture -i wlan1 --ssid LAB-AP-01 --channel 6 --duration 120 --ack-authorized
+sudo handshakelab doctor -i wlan1
+sudo handshakelab capture -i wlan1 --ssid LAB-AP --channel 6 --ack-authorized
 handshakelab convert latest
-handshakelab crack latest --wordlist ./wordlists/your-qa-list.txt
+handshakelab crack latest --wordlist ./wordlists/qa.txt
+handshakelab show latest --reveal
+```
+
+### macOS
+
+```bash
+brew install hcxtools hashcat wireshark
+pip install -e .
+cp lab.toml.example lab.toml
+
+handshakelab doctor -i en0
+# Option A: import a Wireshark capture
+handshakelab import capture.pcapng --ssid LAB-AP --ack-authorized
+# Option B: live capture (sudo)
+sudo handshakelab capture -i en0 --ssid LAB-AP --channel 6 --ack-authorized
+
+handshakelab convert latest
+handshakelab crack latest --wordlist ./wordlists/qa.txt
 handshakelab show latest --reveal
 ```
 
 ---
 
-## Project layout
+## Commands
 
-```
-.
-├── docs/                    # Project plan & technical documentation
-├── src/handshakelab/        # Python package (CLI + services)
-├── tests/                   # Unit tests (fixtures only, no real captures in git)
-├── lab.toml.example         # Authorized target allow-list template
-├── pyproject.toml
-├── MASTER_TODO.md           # Cross-session task ledger
-└── README.md
-```
+| Command | Description |
+| --- | --- |
+| `doctor` | Preflight toolchain + adapter checks |
+| `scan` | Passive WiFi scan |
+| `capture` | Live handshake capture (sudo) |
+| `import` | Import existing `.pcap` / `.pcapng` |
+| `convert` | pcapng → Hashcat `.22000` |
+| `crack` | Offline Hashcat (never hits the AP) |
+| `show` | Display result (`--reveal` for plaintext) |
+| `report` | QA report (md/json) |
+| `list` | List vault runs |
+
+---
+
+## Documentation
+
+| Doc | Description |
+| --- | --- |
+| [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) | Install & workflow (Linux + Mac) |
+| [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) | Full project plan |
+| [`docs/TECHNICAL_BLUEPRINT.md`](docs/TECHNICAL_BLUEPRINT.md) | Technical design |
+| [`docs/LEGAL_AND_ETHICS.md`](docs/LEGAL_AND_ETHICS.md) | **Read before use** |
+| [`MASTER_TODO.md`](MASTER_TODO.md) | Task ledger |
 
 ---
 
-## Stack
+## Legal
 
-- **Python 3.11+** — orchestration CLI
-- **hcxdumptool / hcxtools** — capture & convert to `.22000`
-- **Hashcat** — offline WPA cracking
-- **SQLite** — local run metadata vault
-
----
+**Authorized lab use only.** See [`docs/LEGAL_AND_ETHICS.md`](docs/LEGAL_AND_ETHICS.md).
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE). Use responsibly and only on authorized networks.
+MIT

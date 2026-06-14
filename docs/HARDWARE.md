@@ -1,10 +1,17 @@
 # HandshakeLab — Hardware Guide
 
+## Supported platforms
+
+| OS | Capture | Convert/Crack | Notes |
+| --- | --- | --- | --- |
+| Linux | Full (hcxdumptool + monitor mode) | Yes | Primary platform |
+| macOS | airport sniff + import; hcxdumptool with USB | Yes | Built-in WiFi limited; import workflow recommended |
+
 ## Minimum requirements
 
 | Component | Requirement |
 | --- | --- |
-| Host OS | Linux (kernel 5.x+, your 6.17 bench is fine) |
+| Host OS | Linux (kernel 5.x+) or macOS 12+ |
 | CPU | 4+ cores; cracking is CPU/GPU bound |
 | RAM | 8 GB minimum; 16 GB for large wordlists |
 | USB | USB 3.0 port for modern adapters |
@@ -64,6 +71,13 @@ Dedicated test AP isolated from production:
 - Configurable SSID per test case
 - Known password rotation schedule
 - No client devices except DUT + capture machine
+
+## macOS specifics
+
+- **Built-in WiFi (`en0`):** `handshakelab capture` uses `/System/Library/.../airport sniff <channel>`. Requires `sudo`. Output saved as `.cap` and converted to `.pcapng`.
+- **Recommended:** Capture in Wireshark, then `handshakelab import file.pcapng --ssid ... --ack-authorized`.
+- **USB adapter:** Alfa AWUS036ACH with drivers that support monitor mode enables `hcxdumptool` on Mac (same as Linux workflow).
+- **Hashcat on Mac:** `brew install hashcat` — CPU by default; Metal/OpenCL depends on hardware.
 
 ## Troubleshooting
 

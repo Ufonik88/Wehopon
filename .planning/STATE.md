@@ -1,8 +1,8 @@
 # HandshakeLab Current State
 
-**Current Phase:** 0 — Planning (complete); Phase 1 next  
+**Current Phase:** 5 — MVP implemented (v0.1.0); HIL verification next  
 **Last Updated:** 2026-06-14  
-**Product:** HandshakeLab (WiFi handshake capture + offline crack for authorized product testing)
+**Product:** HandshakeLab (WiFi handshake capture + offline crack, Linux + macOS)
 
 ## Critical context
 
@@ -17,11 +17,10 @@ The repository previously contained a **WeHopOn travel planner** (Next.js + Supa
 - Python package scaffold added
 - Next.js travel skeleton removed
 
-## Next up (Phase 1)
+## Next up
 
-- Implement `handshakelab doctor`
-- `lab.toml.example`
-- Verify bench hardware (monitor-mode adapter)
+- User HIL test on lab AP (Linux and/or Mac)
+- Optional Phase 6 local web UI
 
 ## Key docs
 
