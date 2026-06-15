@@ -1,7 +1,7 @@
 # HandshakeLab — Project Status
 
-**Version:** 0.3.0  
-**Last updated:** 2026-06-14  
+**Version:** 0.3.1  
+**Last updated:** 2026-06-15  
 **Repository:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
 **Product:** HandshakeLab — passive WiFi handshake capture + offline crack
 
@@ -33,6 +33,7 @@ Build a tool for **authorized product testing** that:
 | 2026-06-14 | **v0.1.0** — Python CLI: doctor, scan, capture, convert, crack, show, report |
 | 2026-06-14 | **v0.2.0** — Web UI (`handshakelab ui`), one-click auto-crack, enhanced multi-stage cracking, optional AI wordlist |
 | 2026-06-14 | **v0.3.0** — Built-in passive sniffer (tcpdump/hcxdumptool/airport), EAPOL detection, live packet counters in UI |
+| 2026-06-15 | **v0.3.1** — Hardening & UX gap fixes: optional `--interface`, passphrase masking in `report.json`, tool versions in `meta.json`, lab context in UI, test coverage 17 → 40 |
 
 ---
 
@@ -119,7 +120,7 @@ Build a tool for **authorized product testing** that:
 
 | Item | Status |
 | --- | --- |
-| pytest unit tests (17 tests) | ✅ Green |
+| pytest unit tests (40 tests) | ✅ Green |
 | ruff lint | ✅ Green |
 | GitHub Actions (Python 3.11, ruff, pytest) | ✅ |
 
@@ -200,6 +201,14 @@ sudo handshakelab ui
 ---
 
 ## 6. Version changelog
+
+### v0.3.1 (2026-06-15)
+- CLI: `--interface` is now optional for `scan`, `capture`, and `import`; falls back to `lab.toml`
+- Security: `report.json` no longer contains the plaintext passphrase — only a first+last-char mask; `report.md` instructs operators to use `handshakelab show <run> --reveal`
+- Audit: per-run `meta.json` now records installed tool versions (hashcat, hcxdumptool, hcxpcapngtool, tcpdump, tshark) per TECHNICAL_BLUEPRINT §4.3
+- UX: web UI shows lab name, operator, and default adapter; footer shows `version · platform · lab name`
+- Sniffer: backend preference order now matches docs — **tcpdump first**, then hcxdumptool, then macOS airport
+- Tests: added 23 unit tests (17 → 40) covering `doctor`, `report`, `convert`, `crack`, `pipeline`, `ai_wordlist`
 
 ### v0.3.0 (2026-06-14)
 - Built-in passive sniffer (`sniffer.py`) — tcpdump, hcxdumptool, macOS airport

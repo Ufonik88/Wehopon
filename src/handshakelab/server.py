@@ -52,6 +52,13 @@ def create_app(config_path: Path | None = None) -> FastAPI:
             "doctor_ok": ok,
             "ai_available": ai_available(),
             "require_authorization": config.require_authorization,
+            "lab": {
+                "name": config.name,
+                "operator": config.operator,
+                "default_adapter": config.capture.default_adapter,
+                "default_duration_sec": config.capture.default_duration_sec,
+                "ui_port": config.ui.default_port,
+            },
             "checks": [{"name": c.name, "ok": c.ok, "detail": c.detail} for c in checks],
         }
 

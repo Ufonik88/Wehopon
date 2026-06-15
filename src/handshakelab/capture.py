@@ -13,6 +13,7 @@ from handshakelab.eapol import CaptureAnalysis, has_eapol_handshake
 from handshakelab.legal import assert_authorized
 from handshakelab.sniffer import SnifferError, passive_capture
 from handshakelab.util import platform as plat
+from handshakelab.util.proc import run, which
 from handshakelab.util.wifi import has_root, scan_networks
 from handshakelab.vault import RunRecord, Vault, sha256_file
 
@@ -21,6 +22,20 @@ CaptureTickFn = Callable[[CaptureAnalysis, str], None]
 
 class CaptureError(Exception):
     pass
+
+
+def _tool_versions() -> dict[str, str]:
+    """Return installed tool versions for audit storage in meta.json."""
+    versions: dict[str, str] = {}
+    for name in ("hashcat", "hcxdumptool", "hcxpcapngtool", "tcpdump", "tshark"):
+        path = which(name)
+        if not path:
+            continue
+        flag = "-V" if name == "hashcat" else "-v"
+        result = run([path, flag], check=False)
+        line = (result.stdout or result.stderr or "").strip().splitlines()
+        versions[name] = line[0] if line else path
+    return versions
 
 
 @dataclass
@@ -128,6 +143,7 @@ def capture_handshake(
             "capture_backend": sniff.backend,
             "packets": sniff.analysis.total_packets,
             "eapol_frames": sniff.analysis.eapol_frames,
+            "tool_versions": _tool_versions(),
         },
     )
     return CaptureResult(
@@ -147,6 +163,7 @@ def import_capture(
     source: Path,
     ssid: str,
     config: LabConfig,
+    iface: str | None = None,
     bssid: str | None = None,
     channel: int | None = None,
     ack_authorized: bool = False,
@@ -176,7 +193,7 @@ def import_capture(
         ssid=ssid,
         bssid=bssid,
         channel=channel,
-        adapter=None,
+        adapter=iface,
         capture_path=str(dest),
         hash_path=None,
         status="captured",

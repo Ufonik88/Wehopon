@@ -27,6 +27,14 @@ async function init() {
       ? "(API key detected)"
       : "(optional — set HANDSHAKELAB_AI_API_KEY)";
 
+    const lab = health.lab || {};
+    const labName = lab.name || "Lab";
+    const operator = lab.operator || "—";
+    const adapter = lab.default_adapter || "wlan0";
+    $("labMeta").textContent = `${labName} · operator: ${operator} · default adapter: ${adapter}`;
+    $("footerMeta").textContent =
+      `v${health.version} · ${health.platform} · ${labName} · Authorized product testing only · Offline crack — AP is never brute-forced online`;
+
     const ifaces = await api("/api/interfaces");
     const sel = $("ifaceSelect");
     sel.innerHTML = "";
@@ -39,8 +47,8 @@ async function init() {
     });
     if (!sel.options.length) {
       const opt = document.createElement("option");
-      opt.value = "wlan0";
-      opt.textContent = "wlan0 (default)";
+      opt.value = adapter;
+      opt.textContent = `${adapter} (default)`;
       sel.appendChild(opt);
     }
   } catch (e) {

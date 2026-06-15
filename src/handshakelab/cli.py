@@ -84,7 +84,10 @@ def doctor(
 @app.command()
 def scan(
     ctx: typer.Context,
-    iface: Annotated[str, typer.Option("--interface", "-i", help="WiFi interface")],
+    iface: Annotated[
+        Optional[str],
+        typer.Option("--interface", "-i", help="WiFi interface (defaults to lab.toml)"),
+    ] = None,
 ) -> None:
     """Passively scan for nearby networks."""
     config = load_config(ctx.obj.get("config"))
@@ -116,8 +119,11 @@ def scan(
 @app.command()
 def capture(
     ctx: typer.Context,
-    iface: Annotated[str, typer.Option("--interface", "-i", help="WiFi interface")],
     ssid: Annotated[str, typer.Option("--ssid", "-s", help="Target SSID (authorized)")],
+    iface: Annotated[
+        Optional[str],
+        typer.Option("--interface", "-i", help="WiFi interface (defaults to lab.toml)"),
+    ] = None,
     bssid: Annotated[Optional[str], typer.Option("--bssid", "-b")] = None,
     channel: Annotated[Optional[int], typer.Option("--channel")] = None,
     duration: Annotated[
@@ -162,6 +168,10 @@ def import_cmd(
     ctx: typer.Context,
     file: Annotated[Path, typer.Argument(help="Existing .pcap / .pcapng / .cap file")],
     ssid: Annotated[str, typer.Option("--ssid", "-s")],
+    iface: Annotated[
+        Optional[str],
+        typer.Option("--interface", "-i", help="Recorded on interface (for record)"),
+    ] = None,
     bssid: Annotated[Optional[str], typer.Option("--bssid", "-b")] = None,
     channel: Annotated[Optional[int], typer.Option("--channel")] = None,
     ack_authorized: Annotated[bool, typer.Option("--ack-authorized")] = False,
@@ -173,6 +183,7 @@ def import_cmd(
             source=file,
             ssid=ssid,
             config=config,
+            iface=iface or config.capture.default_adapter,
             bssid=bssid,
             channel=channel,
             ack_authorized=ack_authorized,

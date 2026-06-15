@@ -5,7 +5,27 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from handshakelab.vault import Vault, run_dir_for
+from handshakelab.vault import CrackResult, Vault, run_dir_for
+
+
+def _mask(value: str) -> str:
+    if not value:
+        return ""
+    if len(value) <= 2:
+        return "*" * len(value)
+    return value[0] + "*" * (len(value) - 2) + value[-1]
+
+
+def _safe_crack_payload(crack: CrackResult) -> dict:
+    """Return a JSON-safe crack dict. Never include the plaintext passphrase."""
+    return {
+        "run_id": crack.run_id,
+        "cracked_at": crack.cracked_at,
+        "method": crack.method,
+        "duration_ms": crack.duration_ms,
+        "success": crack.success,
+        "passphrase_masked": _mask(crack.passphrase) if crack.passphrase else None,
+    }
 
 
 def report_markdown(run_id: str) -> str:
@@ -37,7 +57,7 @@ def report_markdown(run_id: str) -> str:
                 f"- **Method:** {crack.method}",
                 f"- **Duration:** {crack.duration_ms} ms",
                 f"- **Success:** {'yes' if crack.success else 'no'}",
-                f"- **Passphrase:** {'[recovered]' if crack.success else 'n/a'}",
+                f"- **Passphrase:** {'[recovered — use `handshakelab show <run> --reveal`]' if crack.success else 'n/a'}",
             ]
         )
 
@@ -55,6 +75,12 @@ def report_markdown(run_id: str) -> str:
 
 
 def report_json(run_id: str) -> str:
+    """JSON report with the plaintext passphrase masked.
+
+    The plaintext passphrase is only ever exposed through
+    `handshakelab show <run> --reveal` so it cannot leak via shared
+    QA artifacts.
+    """
     vault = Vault()
     record = vault.get_run(run_id)
     if not record:
@@ -62,7 +88,7 @@ def report_json(run_id: str) -> str:
     crack = vault.get_crack_result(run_id)
     payload = {
         "run": record.__dict__,
-        "crack": crack.__dict__ if crack else None,
+        "crack": _safe_crack_payload(crack) if crack else None,
     }
     return json.dumps(payload, indent=2)
 

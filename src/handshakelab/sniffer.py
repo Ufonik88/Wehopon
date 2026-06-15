@@ -83,11 +83,17 @@ def passive_capture(
 
 
 def _available_backends() -> list[str]:
+    """Return backends in documented preference order: tcpdump first.
+
+    tcpdump ships with virtually every Linux distro and macOS, so it is the
+    safest primary. hcxdumptool is preferred when PMKID is desired and the
+    adapter supports it. macOS airport is the last-resort channel-bound sniffer.
+    """
     order: list[str] = []
-    if which("hcxdumptool"):
-        order.append("hcxdumptool")
     if which("tcpdump"):
         order.append("tcpdump")
+    if which("hcxdumptool"):
+        order.append("hcxdumptool")
     if plat.is_macos() and airport_path():
         order.append("airport")
     return order
