@@ -1,7 +1,7 @@
 # HandshakeLab — Technical Blueprint
 
 **Date:** 2026-06-14  
-**Status:** v0.3.0 — Implementation complete; bench verification pending. See [`PROJECT_STATUS.md`](PROJECT_STATUS.md).
+**Status:** v0.3.1 — Implementation complete; bench verification pending. See [`PROJECT_STATUS.md`](PROJECT_STATUS.md).
 **Approach:** Linux-native, CLI-first, offline cracking workstation
 
 ---

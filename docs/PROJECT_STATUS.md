@@ -1,7 +1,7 @@
 # HandshakeLab — Project Status
 
 **Version:** 0.3.1  
-**Last updated:** 2026-06-15  
+**Last updated:** 2026-06-24  
 **Repository:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
 **Product:** HandshakeLab — passive WiFi handshake capture + offline crack
 
@@ -34,6 +34,7 @@ Build a tool for **authorized product testing** that:
 | 2026-06-14 | **v0.2.0** — Web UI (`handshakelab ui`), one-click auto-crack, enhanced multi-stage cracking, optional AI wordlist |
 | 2026-06-14 | **v0.3.0** — Built-in passive sniffer (tcpdump/hcxdumptool/airport), EAPOL detection, live packet counters in UI |
 | 2026-06-15 | **v0.3.1** — Hardening & UX gap fixes: optional `--interface`, passphrase masking in `report.json`, tool versions in `meta.json`, lab context in UI, test coverage 17 → 40 |
+| 2026-06-24 | **v0.3.1** (continued) — Pipeline passphrase redaction, mypy/pytest-cov/pre-commit dev tooling, shared test fixtures, coverage threshold 80%, mypy strict config, GitHub tag v0.3.1 |
 
 ---
 
@@ -121,6 +122,8 @@ Build a tool for **authorized product testing** that:
 | Item | Status |
 | --- | --- |
 | pytest unit tests (40 tests) | ✅ Green |
+| pytest coverage (80% threshold) | ✅ Configured |
+| mypy strict type checking | ✅ Configured |
 | ruff lint | ✅ Green |
 | GitHub Actions (Python 3.11, ruff, pytest) | ✅ |
 
@@ -162,7 +165,7 @@ Each run folder contains: `capture.pcapng`, `crack.22000`, `crack.log`, `meta.js
 | 6 | Download artifacts from web UI | Low | |
 | 7 | `.deb` / Homebrew formula packaging | Low | Easier install |
 | 8 | Rename GitHub repo `Wehopon` → `HandshakeLab` | Low | Cosmetic |
-| 9 | Tag release `v0.3.0` on GitHub | Low | |
+| 9 | GitHub release tag `v0.3.1` | ✅ | Done |
 
 ### 4.3 Known limitations (not bugs — physics)
 
@@ -202,13 +205,18 @@ sudo handshakelab ui
 
 ## 6. Version changelog
 
-### v0.3.1 (2026-06-15)
+### v0.3.1 (2026-06-15 / 2026-06-24)
 - CLI: `--interface` is now optional for `scan`, `capture`, and `import`; falls back to `lab.toml`
 - Security: `report.json` no longer contains the plaintext passphrase — only a first+last-char mask; `report.md` instructs operators to use `handshakelab show <run> --reveal`
+- Security: pipeline no longer logs plaintext passphrase to job log (redacted to "SUCCESS: password recovered")
 - Audit: per-run `meta.json` now records installed tool versions (hashcat, hcxdumptool, hcxpcapngtool, tcpdump, tshark) per TECHNICAL_BLUEPRINT §4.3
 - UX: web UI shows lab name, operator, and default adapter; footer shows `version · platform · lab name`
 - Sniffer: backend preference order now matches docs — **tcpdump first**, then hcxdumptool, then macOS airport
 - Tests: added 23 unit tests (17 → 40) covering `doctor`, `report`, `convert`, `crack`, `pipeline`, `ai_wordlist`
+- Dev tooling: added mypy (strict), pytest-cov (80% threshold), pre-commit dev dependencies
+- Dev tooling: `.pre-commit-config.yaml` with lint/format hooks
+- Test infrastructure: shared `conftest.py` fixtures and `fixtures/` directory
+- GitHub: tag `v0.3.1` created and pushed
 
 ### v0.3.0 (2026-06-14)
 - Built-in passive sniffer (`sniffer.py`) — tcpdump, hcxdumptool, macOS airport
@@ -248,7 +256,7 @@ Wehopon/
 │   ├── eapol.py            # Handshake detection
 │   └── …                   # capture, crack, vault, etc.
 ├── docs/                   # All documentation
-├── tests/                  # pytest (17 tests)
+├── tests/                  # pytest (40 tests, conftest.py + fixtures/)
 ├── lab.toml.example        # Config template
 ├── MASTER_TODO.md          # Live task ledger
 ├── README.md

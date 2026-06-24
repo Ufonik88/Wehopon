@@ -6,7 +6,7 @@
 > **Linux and macOS supported.**
 
 **Repository:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
-**Status:** v0.3.0 — Built-in sniffer + Web UI auto-crack
+**Status:** v0.3.1 — Hardening, security, dev tooling
 **Docs:** [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md)
 
 ## One-click UI (recommended)
@@ -83,7 +83,7 @@ handshakelab show latest --reveal
 
 See **[`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md)** for the full breakdown.
 
-**Done (v0.3.0):** Web UI, built-in sniffer, EAPOL detection, auto-crack pipeline, enhanced offline crack, AI wordlist option, CLI, tests, CI.
+**Done (v0.3.1):** Web UI, built-in sniffer, EAPOL detection, auto-crack pipeline, enhanced offline crack, AI wordlist option, CLI, tests, CI, passphrase masking, tool version audit, dev tooling (mypy, pytest-cov, pre-commit), shared test fixtures.
 
 **Still needed (your side):** Install `tcpdump` + `hcxtools` + `hashcat`, USB adapter with monitor mode (Linux), end-to-end test on a lab AP you own, complete [`docs/HIL_CHECKLIST.md`](docs/HIL_CHECKLIST.md).
 

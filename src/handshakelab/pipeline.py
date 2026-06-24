@@ -188,7 +188,7 @@ def run_auto_pipeline(
                 password=result.passphrase,
                 method=result.method,
             )
-            jobs.append_log(job_id, f"SUCCESS: {result.passphrase}")
+            jobs.append_log(job_id, "SUCCESS: password recovered")
         else:
             jobs.update(
                 job_id,

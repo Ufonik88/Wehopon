@@ -5,7 +5,7 @@
 **HandshakeLab** — passive WiFi handshake capture + offline crack for **authorized product testing**.
 
 **Repo:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
-**Version:** 0.3.0  
+**Version:** 0.3.1  
 **Status doc:** [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — **read this first** for done vs remaining work.
 
 ## Original brief

@@ -3,7 +3,7 @@
 > **Product:** HandshakeLab — passive WiFi capture + offline crack (authorized product testing)  
 > **Repo:** [github.com/Ufonik88/Wehopon](https://github.com/Ufonik88/Wehopon)  
 > **Version:** 0.3.1  
-> **Last updated:** 2026-06-15  
+> **Last updated:** 2026-06-24  
 >
 > **Full status doc:** [`docs/PROJECT_STATUS.md`](docs/PROJECT_STATUS.md) — read this for complete done/remaining list.
 
@@ -52,7 +52,10 @@
 | **End-to-end crack on owned lab AP** | ⬜ | User must run |
 | GPU hashcat in doctor | ⬜ | Future |
 | WPA3-SAE support | ⬜ | Future |
-| GitHub release tag v0.3.1 | ⬜ | Optional |
+| GitHub release tag v0.3.1 | ✅ | v0.3.1 tag pushed |
+| Dev tooling: mypy, pytest-cov, pre-commit, type-check config | ✅ | `pyproject.toml`, `.pre-commit-config.yaml` |
+| Shared test fixtures (conftest.py, fixtures/) | ✅ | `tests/conftest.py`, `tests/fixtures/` |
+| Pipeline no longer logs plaintext passphrase | ✅ | `pipeline.py:191` |
 
 ---
 
@@ -67,13 +70,20 @@
 ### Phase 6 — Web UI + auto-crack ✅
 ### Phase 7 — Built-in sniffer + EAPOL (v0.3.0) ✅
 
-### Phase 7b — Hardening & UX gaps (v0.3.1) ✅ (2026-06-15)
+### Phase 7b — Hardening & UX gaps (v0.3.1) ✅ (2026-06-24)
 - ✅ Make `iface` optional across CLI (defaults to `lab.toml`)
 - ✅ Mask plaintext passphrase in `report.json` (only `show --reveal` exposes it)
 - ✅ Realign sniffer backend order with documented "tcpdump primary"
 - ✅ Record tool versions in per-run `meta.json` (TECHNICAL_BLUEPRINT §4.3)
 - ✅ Expose lab name/operator/default-adapter via `/api/health` and render in UI
 - ✅ Add unit tests for doctor, report, convert, crack, pipeline, ai_wordlist (17 → 40 tests)
+- ✅ Pipeline no longer logs plaintext passphrase to job log
+- ✅ Add dev dependencies: mypy, pytest-cov, pre-commit
+- ✅ Add mypy type-checking configuration (strict)
+- ✅ Add pytest coverage reporting with 80% threshold
+- ✅ Add `.pre-commit-config.yaml` with lint hooks
+- ✅ Add shared test fixtures (`conftest.py`, `fixtures/`)
+- ✅ Create and push GitHub tag v0.3.1
 
 ### Phase 8 — Bench verification ⬜ (current)
 - ⬜ User installs tcpdump + hcxtools + hashcat
@@ -95,7 +105,7 @@ See **§7 Future Enhancements & Roadmap** below for prioritized backlog.
 - [ ] **[user]** Fill in `docs/HIL_CHECKLIST.md` after first successful run
 - [ ] **[user]** Add custom wordlist path to `lab.toml` (optional)
 - [ ] **[user]** Set `HANDSHAKELAB_AI_API_KEY` for AI-assisted guesses (optional)
-- [ ] **[agent]** Tag `v0.3.1` GitHub release after user HIL pass
+- [x] **[agent]** Tag `v0.3.1` GitHub release after user HIL pass
 
 ---
 
@@ -118,6 +128,7 @@ See **§7 Future Enhancements & Roadmap** below for prioritized backlog.
 
 ## 6. Done (archive)
 
+- 2026-06-24 — v0.3.1: Additional hardening (pipeline passphrase redaction), dev tooling (mypy, pytest-cov, pre-commit), shared test fixtures, coverage threshold, mypy strict config, tag v0.3.1 pushed
 - 2026-06-15 — v0.3.1: CLI/UX hardening, security (passphrase masking), audit (tool versions), test coverage 17 → 40
 - 2026-06-14 — v0.3.0: built-in sniffer, EAPOL detection, live UI counters
 - 2026-06-14 — v0.2.0: web UI, auto-crack pipeline, enhanced crack, AI wordlist

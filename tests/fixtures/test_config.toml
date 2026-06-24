@@ -1,0 +1,8 @@
+[lab]
+name = "test-lab"
+
+[capture]
+default_duration_sec = 5
+
+[vault]
+path = "/tmp/handshakelab-test-vault"
