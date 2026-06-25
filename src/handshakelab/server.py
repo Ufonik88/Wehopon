@@ -6,7 +6,7 @@ import asyncio
 import json
 import webbrowser
 from pathlib import Path
-from typing import Any
+from typing import Any, AsyncIterator
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, StreamingResponse
@@ -63,8 +63,8 @@ def create_app(config_path: Path | None = None) -> FastAPI:
         }
 
     @app.get("/api/interfaces")
-    def interfaces() -> dict[str, list[str]]:
-        ifaces = list_interfaces()
+    def interfaces() -> dict[str, list[str] | str | None]:
+        ifaces: list[str] = list_interfaces()
         config = load_config(cfg_path)
         default = config.capture.default_adapter
         if default and default not in ifaces:
@@ -127,7 +127,7 @@ def create_app(config_path: Path | None = None) -> FastAPI:
         if not job:
             raise HTTPException(404, "Job not found")
 
-        async def stream():
+        async def stream() -> AsyncIterator[str]:
             last_len = 0
             while True:
                 j = jobs.get(job_id)

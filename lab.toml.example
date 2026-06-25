@@ -15,13 +15,21 @@ owner = "Your Company QA"
 authorization_ref = "QA-TICKET-001"
 
 [capture]
+# Use the OS-default interface for this platform:
+#   Linux:  "wlan1"  (USB monitor-mode adapter recommended)
+#   macOS:  "en0"    (built-in WiFi) or your USB adapter
+# `handshakelab doctor` will tell you the actual interface name.
 default_adapter = "wlan1"
 default_duration_sec = 300
 # Controlled deauth is disruptive — lab-only, off by default.
 deauth_enabled = false
 
 [crack]
-hashcat_bin = "/usr/bin/hashcat"
+# Path to hashcat binary. On macOS (Homebrew) it is usually:
+#   /opt/homebrew/bin/hashcat
+# On Linux (apt) it is usually:
+#   /usr/bin/hashcat
+hashcat_bin = "/opt/homebrew/bin/hashcat"
 wordlist = "/path/to/your-internal-qa-wordlist.txt"
 workload_profile = 2
 

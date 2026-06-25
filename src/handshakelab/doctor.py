@@ -63,7 +63,7 @@ def run_doctor(
     checks.append(Check("capture_backend", capture_ok, capture_detail or "install tcpdump"))
 
     if tools.get("tshark"):
-        checks.append(Check("tshark", True, tools["tshark"]))
+        checks.append(Check("tshark", True, tools["tshark"] or ""))
     else:
         checks.append(
             Check(

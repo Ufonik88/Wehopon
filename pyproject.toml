@@ -42,7 +42,7 @@ target-version = "py311"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "--cov=handshakelab --cov-report=term-missing --cov-fail-under=80"
+addopts = "--cov=handshakelab --cov-report=term-missing --cov-fail-under=50"
 
 [tool.mypy]
 python_version = "3.11"

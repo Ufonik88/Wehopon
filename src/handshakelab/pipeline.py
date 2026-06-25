@@ -11,6 +11,7 @@ from enum import Enum
 from typing import Any
 
 from handshakelab.capture import CaptureError, capture_handshake
+from handshakelab.eapol import CaptureAnalysis
 from handshakelab.config import LabConfig, load_config
 from handshakelab.convert import ConvertError, convert_run
 from handshakelab.crack_enhanced import enhanced_crack
@@ -133,7 +134,9 @@ def run_auto_pipeline(
             percent=12,
         )
 
-        def on_capture_tick(analysis, msg: str) -> None:
+        def on_capture_tick(
+            analysis: CaptureAnalysis, msg: str
+        ) -> None:
             jobs.update(
                 job_id,
                 capture_packets=analysis.total_packets,
