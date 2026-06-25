@@ -1,0 +1,16 @@
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "indexing": {
+    "provider": "openai-compatible",
+    "model": "text-embedding-nomic-embed-text-v1.5",
+    "ollama": {
+      "baseUrl": "http://192.168.10.33:1234"
+    },
+    "enabled": true,
+    "vectorStore": "lancedb",
+    "openai-compatible": {
+      "baseUrl": "http://192.168.10.33:1234/v1"
+    },
+    "dimension": 768
+  }
+}
