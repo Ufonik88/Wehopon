@@ -51,6 +51,22 @@ handshakelab scan -i wlan1
 - User does NOT join WiFi to capture — passive sniff only
 - Verify with command output before marking tasks done
 
+## 🚨 Hard rule: update TEST_CHECKLIST.md and MASTER_TODO.md after every task
+
+**Every task — bug fix, feature, refactor, test addition, doc change — must end with an update to both:**
+
+1. **`TEST_CHECKLIST.md`** (root) — move completed steps to the ✅ COMPLETED section, add bugs to the Bug Fixes table (with ID, file, fix description, verification evidence), update the Run Log, and add new test steps to the Outstanding section if the task introduces them.
+2. **`MASTER_TODO.md`** (root) — append new items to §4 Active backlog (with owner tag), move completed items to §6 Done with date, append a row to §5 Decisions log if the task established a new convention.
+
+**Why:** These are the live ledger of what's done and what's next. Skipping the update makes the docs lie and forces the next session to re-discover state.
+
+**When:** At the **end** of the task, before reporting completion. Not optional, not deferred.
+
+**Format conventions:**
+- Bug IDs: `B<n>` for in-session fixes, `O<n>` for the open-issue sweep. Match the IDs already used in `TEST_CHECKLIST.md`.
+- Status: ✅ done · ⚠️ partial · ⏳ pending · 🔵 future · N/A n/a
+- Run Log entries: date, host, scope, outcome (one line each).
+
 ## GitHub CLI on this machine
 
 ```bash

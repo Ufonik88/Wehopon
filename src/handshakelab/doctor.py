@@ -51,16 +51,36 @@ def run_doctor(
         checks.append(Check("tcpdump", True, f"{tcpdump} (built-in sniffer)"))
 
     capture_ok = bool(tools.get("hcxdumptool") or tcpdump)
-    capture_detail = ", ".join(
-        x
-        for x in [
-            f"tcpdump={tcpdump or 'n/a'}",
-            f"hcxdumptool={tools.get('hcxdumptool') or 'n/a'}",
-            f"airport={airport_path() or 'n/a'}" if plat.is_macos() else None,
-        ]
-        if x
+    capture_parts: list[str] = [
+        f"tcpdump={tcpdump or 'n/a'}",
+        f"hcxdumptool={tools.get('hcxdumptool') or 'n/a'}",
+    ]
+    if plat.is_macos():
+        airport = airport_path()
+        if plat.is_modern_macos(14) and airport is None:
+            capture_parts.append("airport=removed (macOS 14+ has no CLI; use USB adapter)")
+        else:
+            capture_parts.append(f"airport={airport or 'n/a'}")
+    capture_detail = ", ".join(capture_parts)
+
+    # On macOS, tcpdump-on-en0 alone is not enough for raw 802.11 EAPOL capture.
+    # Flag this so users know they need hcxdumptool + a USB adapter.
+    capture_ok_for_handshake = bool(tcpdump) and not (
+        plat.is_macos() and not tools.get("hcxdumptool")
     )
-    checks.append(Check("capture_backend", capture_ok, capture_detail or "install tcpdump"))
+    checks.append(
+        Check(
+            "capture_backend",
+            capture_ok_for_handshake,
+            capture_detail + (
+                " | macOS: install hcxdumptool for monitor-mode capture (see docs/HARDWARE.md)"
+                if plat.is_macos() and not tools.get("hcxdumptool")
+                else ""
+            )
+            if capture_ok
+            else "install tcpdump",
+        )
+    )
 
     if tools.get("tshark"):
         checks.append(Check("tshark", True, tools["tshark"] or ""))
@@ -87,13 +107,13 @@ def run_doctor(
                 )
             )
         elif exists and plat.is_macos():
-            checks.append(
-                Check(
-                    f"monitor_mode:{iface}",
-                    True,
-                    "macOS: built-in WiFi uses airport sniff; external USB + hcxdumptool for PMKID",
-                )
+            detail = (
+                "macOS built-in WiFi cannot do raw 802.11 monitor frames. "
+                "Use a USB adapter + hcxdumptool for handshake capture."
+                if plat.is_modern_macos(14)
+                else "macOS: built-in WiFi uses airport sniff; external USB + hcxdumptool for PMKID"
             )
+            checks.append(Check(f"monitor_mode:{iface}", False, detail))
 
     checks.append(
         Check(

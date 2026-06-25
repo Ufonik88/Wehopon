@@ -37,6 +37,12 @@ def _config_opt(config: Path | None) -> Path | None:
     return config
 
 
+def _version_callback(value: bool) -> None:
+    if value:
+        console.print(f"handshakelab {__version__} ({plat.platform_label()})")
+        raise typer.Exit()
+
+
 @app.callback()
 def main(
     ctx: typer.Context,
@@ -44,6 +50,15 @@ def main(
         Optional[Path],
         typer.Option("--config", "-c", help="Path to lab.toml"),
     ] = None,
+    version: Annotated[
+        bool,
+        typer.Option(
+            "--version",
+            callback=_version_callback,
+            is_eager=True,
+            help="Show installed version and exit.",
+        ),
+    ] = False,
 ) -> None:
     ctx.ensure_object(dict)
     ctx.obj["config"] = _config_opt(config)

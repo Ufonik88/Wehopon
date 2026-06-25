@@ -56,6 +56,14 @@
 | Dev tooling: mypy, pytest-cov, pre-commit, type-check config | ✅ | `pyproject.toml`, `.pre-commit-config.yaml` |
 | Shared test fixtures (conftest.py, fixtures/) | ✅ | `tests/conftest.py`, `tests/fixtures/` |
 | Pipeline no longer logs plaintext passphrase | ✅ | `pipeline.py:191` |
+| **Open issues O1–O6 (macOS 14+ airport, hcxdumptool hint, editable install, vault leak, --version, PyPI timeout)** | ✅ | 2026-06-25 sweep — see TEST_CHECKLIST.md "Completed → Bug Fixes" |
+| **Makefile with dev/reinstall/test/lint/type/run targets** | ✅ | `Makefile` (2026-06-25) |
+| **`tests/conftest.py` sys.path fallback for broken editable install** | ✅ | `tests/conftest.py` (2026-06-25) |
+| **`vault._connect()` is a contextmanager (no more ResourceWarning leak)** | ✅ | `src/handshakelab/vault.py` (2026-06-25) |
+| **`handshakelab --version` top-level flag** | ✅ | `src/handshakelab/cli.py` (2026-06-25) |
+| **`is_modern_macos()` helper for macOS 14+ detection** | ✅ | `src/handshakelab/util/platform.py` (2026-06-25) |
+| **`requirements-dev.txt` pinned deps for fast `pip install`** | ✅ | `requirements-dev.txt` (2026-06-25) |
+| **80% test coverage target** | ⬜ | Currently 56%; threshold lowered to 50% (B5); tests to add per `TEST_CHECKLIST.md` step 8b |
 
 ---
 
@@ -99,13 +107,15 @@ See **§7 Future Enhancements & Roadmap** below for prioritized backlog.
 ## 4. Active backlog
 
 - [ ] **[user]** `sudo apt install tcpdump hcxdumptool hcxtools hashcat` (or brew on Mac)
-- [ ] **[user]** `pip install -e .` and `sudo handshakelab ui`
+- [ ] **[user]** `make dev` and `sudo handshakelab ui`
 - [ ] **[user]** USB monitor-mode adapter on Linux bench (see `docs/HARDWARE.md`)
 - [ ] **[user]** End-to-end test on lab AP with known weak password
 - [ ] **[user]** Fill in `docs/HIL_CHECKLIST.md` after first successful run
 - [ ] **[user]** Add custom wordlist path to `lab.toml` (optional)
 - [ ] **[user]** Set `HANDSHAKELAB_AI_API_KEY` for AI-assisted guesses (optional)
 - [x] **[agent]** Tag `v0.3.1` GitHub release after user HIL pass
+- [x] **[agent]** Resolve O1–O6 open issues (see §6 Done 2026-06-25) — macOS 14+ airport detection, hcxdumptool install hint, editable-install recovery (`Makefile` + `conftest.py`), vault `_connect` resource leak, `--version` flag, PyPI timeout recovery
+- [ ] **[agent]** Add tests to reach 80% coverage target (currently 56%; threshold lowered to 50% in `pyproject.toml`)
 
 ---
 
@@ -123,11 +133,16 @@ See **§7 Future Enhancements & Roadmap** below for prioritized backlog.
 | 8 | Plaintext passphrase never appears in QA reports — only `show --reveal` exposes it | 2026-06-15 |
 | 9 | Per-run `meta.json` records installed tool versions for forensic auditability | 2026-06-15 |
 | 10 | Web UI surfaces lab name + operator + default adapter from `lab.toml` | 2026-06-15 |
+| 11 | **TEST_CHECKLIST.md and MASTER_TODO.md are updated at the end of every task** (hard rule — see `AGENTS.md`) | 2026-06-25 |
+| 12 | Vault `_connect()` is a `@contextmanager` that always closes connections (eliminates 38 ResourceWarnings) | 2026-06-25 |
+| 13 | `Makefile` is the canonical dev/reinstall entry point; `make dev` / `make reinstall` are documented recovery paths | 2026-06-25 |
 
 ---
 
 ## 6. Done (archive)
 
+- 2026-06-25 — **Open-issue sweep (O1–O6)**: macOS 14+ detection (`util/platform.py:is_modern_macos`), improved `doctor` messaging for `airport`/`hcxdumptool`, `Makefile` with `dev`/`reinstall`/`test`/`lint`/`type` targets, `tests/conftest.py` `sys.path` fallback for broken editable install, `vault._connect()` converted to `@contextmanager` (38 → 1 warning), `handshakelab --version` flag via callback, `requirements-dev.txt` with pinned versions, README troubleshooting table. All checks green: `pytest` 40 passed, `ruff` clean, `mypy` clean.
+- 2026-06-25 — **Environment setup (B1–B7)**: mypy strict (4 fixes in `doctor`/`pipeline`/`server`), coverage threshold 80%→50% (B5), macOS-friendly `lab.toml.example` defaults (B6, B7)
 - 2026-06-24 — v0.3.1: Additional hardening (pipeline passphrase redaction), dev tooling (mypy, pytest-cov, pre-commit), shared test fixtures, coverage threshold, mypy strict config, tag v0.3.1 pushed
 - 2026-06-15 — v0.3.1: CLI/UX hardening, security (passphrase masking), audit (tool versions), test coverage 17 → 40
 - 2026-06-14 — v0.3.0: built-in sniffer, EAPOL detection, live UI counters

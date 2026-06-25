@@ -29,11 +29,10 @@ Optional: set `HANDSHAKELAB_AI_API_KEY` for AI-assisted wordlist generation.
 ## Quick start
 
 ### Linux
-
 ```bash
 sudo apt install tcpdump hcxdumptool hcxtools hashcat iw
-pip install -e .
-cp lab.toml.example lab.toml   # add your authorized lab APs
+make dev                      # creates .venv, pip install -e ".[dev]"
+cp lab.toml.example lab.toml  # add your authorized lab APs
 
 sudo handshakelab doctor -i wlan1
 sudo handshakelab capture -i wlan1 --ssid LAB-AP --channel 6 --ack-authorized
@@ -41,6 +40,37 @@ handshakelab convert latest
 handshakelab crack latest --wordlist ./wordlists/qa.txt
 handshakelab show latest --reveal
 ```
+
+### macOS
+```bash
+brew install tcpdump hcxtools hashcat
+# hcxdumptool is NOT in Homebrew — build from source for monitor-mode capture:
+#   git clone https://github.com/ZerBea/hcxdumptool && cd hcxdumptool && make && sudo make install
+make dev                      # creates .venv, pip install -e ".[dev]"
+cp lab.toml.example lab.toml
+
+handshakelab doctor -i en0
+# Note: macOS 14+ (Sonoma) removed the `airport` CLI. Built-in en0 cannot do
+# raw 802.11 monitor frames. Use a USB adapter + hcxdumptool for capture.
+
+# Option A: import a Wireshark capture
+handshakelab import capture.pcapng --ssid LAB-AP --ack-authorized
+# Option B: live capture with USB adapter (sudo)
+sudo handshakelab capture -i en1 --ssid LAB-AP --channel 6 --ack-authorized
+
+handshakelab convert latest
+handshakelab crack latest --wordlist ./wordlists/qa.txt
+handshakelab show latest --reveal
+```
+
+### Common install issues
+
+| Problem | Fix |
+| --- | --- |
+| `pip install -e ".[dev]"` times out | `pip install -r requirements-dev.txt && pip install -e .` (pinned, faster resolve). Or `make reinstall`. |
+| `ModuleNotFoundError: No module named 'handshakelab'` after editing code | `make reinstall` |
+| `handshakelab --version` says "No such option" | Fixed in v0.3.1 — use `handshakelab --version` or `handshakelab version` |
+| `airport=n/a` in doctor on macOS | Expected on macOS 14+. Use a USB adapter. |
 
 ### macOS
 

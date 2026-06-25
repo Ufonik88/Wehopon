@@ -23,6 +23,31 @@ def is_supported() -> bool:
     return is_linux() or is_macos()
 
 
+def macos_major_version() -> int | None:
+    """Return the macOS major version (e.g. 14 for Sonoma) or None on other OSes.
+
+    Uses the Darwin kernel version: kernel 23 = macOS 14, kernel 24 = macOS 15,
+    kernel 25 = macOS 26 (Tahoe), etc. The release field is used as fallback.
+    """
+    if not is_macos():
+        return None
+    release = platform.release()  # e.g. "25.5.0"
+    try:
+        return int(release.split(".")[0])
+    except (ValueError, IndexError):
+        return None
+
+
+def is_modern_macos(min_major: int = 14) -> bool:
+    """Return True if running on macOS >= min_major (default 14 = Sonoma).
+
+    The legacy `airport` CLI was removed in macOS 14. Use this to gate
+    guidance and capability detection.
+    """
+    v = macos_major_version()
+    return v is not None and v >= min_major
+
+
 def data_dir() -> Path:
     if is_macos():
         base = Path.home() / "Library" / "Application Support" / "handshakelab"

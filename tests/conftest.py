@@ -1,8 +1,17 @@
 """Shared test fixtures for HandshakeLab tests."""
 
+import sys
 from pathlib import Path
 
 import pytest
+
+# Ensure `handshakelab` is importable even if the editable install's .pth
+# file has been clobbered (see TEST_CHECKLIST issue O3). Prepend src/ to
+# sys.path so tests can run after `git pull` or any `pyproject.toml` change
+# that resets the editable install.
+_SRC = Path(__file__).resolve().parent.parent / "src"
+if _SRC.exists() and str(_SRC) not in sys.path:
+    sys.path.insert(0, str(_SRC))
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -38,3 +47,4 @@ def empty_pcap_path(fixtures_dir: Path) -> Path:
     if not pcap_path.exists():
         pytest.skip("Empty PCAP fixture not found. See fixtures/README.md")
     return pcap_path
+
