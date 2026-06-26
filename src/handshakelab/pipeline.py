@@ -124,7 +124,13 @@ def run_auto_pipeline(
         jobs.append_log(job_id, f"[{percent}%] {stage}: {message}")
 
     try:
-        jobs.update(job_id, status=JobStatus.RUNNING, stage="auth", message="Checking authorization…", percent=5)
+        jobs.update(
+            job_id,
+            status=JobStatus.RUNNING,
+            stage="auth",
+            message="Checking authorization…",
+            percent=5,
+        )
         progress("auth", f"Target: {network.ssid}", 8)
 
         jobs.update(
@@ -134,9 +140,7 @@ def run_auto_pipeline(
             percent=12,
         )
 
-        def on_capture_tick(
-            analysis: CaptureAnalysis, msg: str
-        ) -> None:
+        def on_capture_tick(analysis: CaptureAnalysis, msg: str) -> None:
             jobs.update(
                 job_id,
                 capture_packets=analysis.total_packets,

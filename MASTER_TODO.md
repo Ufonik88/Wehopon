@@ -63,7 +63,9 @@
 | **`handshakelab --version` top-level flag** | ✅ | `src/handshakelab/cli.py` (2026-06-25) |
 | **`is_modern_macos()` helper for macOS 14+ detection** | ✅ | `src/handshakelab/util/platform.py` (2026-06-25) |
 | **`requirements-dev.txt` pinned deps for fast `pip install`** | ✅ | `requirements-dev.txt` (2026-06-25) |
-| **80% test coverage target** | ⬜ | Currently 56%; threshold lowered to 50% (B5); tests to add per `TEST_CHECKLIST.md` step 8b |
+| **80% test coverage target** | ✅ | **83.66% reached** with 261 tests (was 56% / 40 tests); 16 new test files added across sessions 3 & 4 |
+| **Built-in macOS WiFi (en0) scan** | ✅ | `handshakelab scan -i en0` works on macOS 14+ via `system_profiler` — 5-7 real networks; BSSID is None for nearby networks (macOS 14+ limitation) |
+| **Built-in macOS WiFi (en0) capture** | ⚠️ | Sniffer emits clear "Built-in macOS WiFi cannot do monitor mode" warning + USB-adapter guidance. **Real capture is physically impossible** (Apple kernel restriction on Broadcom); needs USB adapter |
 
 ---
 
@@ -113,9 +115,12 @@ See **§7 Future Enhancements & Roadmap** below for prioritized backlog.
 - [ ] **[user]** Fill in `docs/HIL_CHECKLIST.md` after first successful run
 - [ ] **[user]** Add custom wordlist path to `lab.toml` (optional)
 - [ ] **[user]** Set `HANDSHAKELAB_AI_API_KEY` for AI-assisted guesses (optional)
+- [ ] **[user]** `sudo handshakelab doctor -i en0` (sudo root path — was deferred)
+- [ ] **[user]** Run pre-commit install on bench (`pre-commit install`) — was deferred in CI
 - [x] **[agent]** Tag `v0.3.1` GitHub release after user HIL pass
-- [x] **[agent]** Resolve O1–O6 open issues (see §6 Done 2026-06-25) — macOS 14+ airport detection, hcxdumptool install hint, editable-install recovery (`Makefile` + `conftest.py`), vault `_connect` resource leak, `--version` flag, PyPI timeout recovery
-- [ ] **[agent]** Add tests to reach 80% coverage target (currently 56%; threshold lowered to 50% in `pyproject.toml`)
+- [x] **[agent]** Resolve O1–O6 open issues (see §6 Done 2026-06-25)
+- [x] **[agent]** Boost test coverage to 80% target (was 56%; now 80.56% with 252 tests) — 2026-06-25 session 3
+- [ ] **[agent]** Push branch + open PR to verify GitHub Actions (Step 10) — can be done by user
 
 ---
 
@@ -136,13 +141,21 @@ See **§7 Future Enhancements & Roadmap** below for prioritized backlog.
 | 11 | **TEST_CHECKLIST.md and MASTER_TODO.md are updated at the end of every task** (hard rule — see `AGENTS.md`) | 2026-06-25 |
 | 12 | Vault `_connect()` is a `@contextmanager` that always closes connections (eliminates 38 ResourceWarnings) | 2026-06-25 |
 | 13 | `Makefile` is the canonical dev/reinstall entry point; `make dev` / `make reinstall` are documented recovery paths | 2026-06-25 |
+| 14 | `--cov-fail-under=80` is the canonical target — restored after boosting tests from 40 → 252 | 2026-06-25 |
+| 15 | `_parse_system_profiler` matches `SSID:` only on `stripped.startswith(...)` (avoid `BSSID:` substring collision) | 2026-06-25 |
+| 16 | pre-commit mypy scope limited to `^src/` (tests have untyped helpers) | 2026-06-25 |
+| 17 | Built-in macOS WiFi (Broadcom) **cannot do monitor mode** — Apple kernel-level restriction. `is_builtin_wifi()` helper detects en0/en1; sniffer emits USB-adapter guidance. | 2026-06-25 |
+| 18 | macOS 14+ `system_profiler` does not expose BSSID for nearby networks (only current network). `Network.bssid` is `Optional[str]`. | 2026-06-25 |
+| 19 | Test handshake fixture (`tests/fixtures/synthetic_handshake.pcapng`) created for offline pipeline testing — real EAPOL bytes; lets `import → convert → vault → show` be tested without a USB adapter. | 2026-06-25 |
 
 ---
 
 ## 6. Done (archive)
 
-- 2026-06-25 — **Open-issue sweep (O1–O6)**: macOS 14+ detection (`util/platform.py:is_modern_macos`), improved `doctor` messaging for `airport`/`hcxdumptool`, `Makefile` with `dev`/`reinstall`/`test`/`lint`/`type` targets, `tests/conftest.py` `sys.path` fallback for broken editable install, `vault._connect()` converted to `@contextmanager` (38 → 1 warning), `handshakelab --version` flag via callback, `requirements-dev.txt` with pinned versions, README troubleshooting table. All checks green: `pytest` 40 passed, `ruff` clean, `mypy` clean.
-- 2026-06-25 — **Environment setup (B1–B7)**: mypy strict (4 fixes in `doctor`/`pipeline`/`server`), coverage threshold 80%→50% (B5), macOS-friendly `lab.toml.example` defaults (B6, B7)
+- 2026-06-25 — **Built-in macOS WiFi session (B15–B19)**: `handshakelab scan -i en0` now works on built-in macOS WiFi via `system_profiler` (5-7 real networks found, no sudo needed). `is_builtin_wifi()` helper added to `util/platform.py`. `_parse_system_profiler` rewritten to handle modern macOS 14+ format (indented SSID headers, no BSSID for nearby networks). `Network.bssid` now `str | None`. `doctor` gives specific "Built-in macOS WiFi (Broadcom) cannot do monitor mode — kernel-level Apple restriction" message. `sniffer` emits ⚠ warning to UI tick callback and clear SnifferError with USB-adapter guidance. 9 new tests added; coverage 80.56% → 83.66%. Final: 261 tests pass, all checks green. Steps 14, 15, 16, 21, 22, 25, 27, 28, 38, 39, 40, 41, 44, 56, 59, 62, 63, 64, 65, 71, 72 advanced (5 ⚠️ deferred due to monitor-mode limit; rest ✅ via code-path tests or real scan).
+- 2026-06-25 — **Test coverage push (B8–B14)**: 252 tests pass (was 40), coverage 80.56% (was 56%); 15 new test files added. Fixed `pre-commit-config.yaml` (removed broken `types-all` dep, scoped mypy to src). Fixed `_parse_system_profiler` substring bug. `pytest --cov-fail-under=80` now **actually passes**. `pre-commit run --all-files` all green.
+- 2026-06-25 — **Open-issue sweep (O1–O6)**: macOS 14+ detection, improved `doctor` messaging, `Makefile` with dev/reinstall/test/lint/type targets, `tests/conftest.py` `sys.path` fallback for broken editable install, `vault._connect()` converted to `@contextmanager` (38 → 1 warning), `handshakelab --version` flag via callback, `requirements-dev.txt` with pinned versions, README troubleshooting table.
+- 2026-06-25 — **Environment setup (B1–B7)**: mypy strict (4 fixes in `doctor`/`pipeline`/`server`), coverage threshold 80%→50% (B5, since restored to 80% in session 3), macOS-friendly `lab.toml.example` defaults (B6, B7)
 - 2026-06-24 — v0.3.1: Additional hardening (pipeline passphrase redaction), dev tooling (mypy, pytest-cov, pre-commit), shared test fixtures, coverage threshold, mypy strict config, tag v0.3.1 pushed
 - 2026-06-15 — v0.3.1: CLI/UX hardening, security (passphrase masking), audit (tool versions), test coverage 17 → 40
 - 2026-06-14 — v0.3.0: built-in sniffer, EAPOL detection, live UI counters

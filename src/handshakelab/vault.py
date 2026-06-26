@@ -152,9 +152,7 @@ class Vault:
     def get_run(self, run_id: str) -> RunRecord | None:
         with self._connect() as conn:
             if run_id == "latest":
-                row = conn.execute(
-                    "SELECT * FROM runs ORDER BY created_at DESC LIMIT 1"
-                ).fetchone()
+                row = conn.execute("SELECT * FROM runs ORDER BY created_at DESC LIMIT 1").fetchone()
             else:
                 row = conn.execute(
                     "SELECT * FROM runs WHERE id = ? OR id LIKE ? ORDER BY created_at DESC LIMIT 1",
@@ -194,9 +192,7 @@ class Vault:
         if not run:
             return None
         with self._connect() as conn:
-            row = conn.execute(
-                "SELECT * FROM crack_results WHERE run_id = ?", (run.id,)
-            ).fetchone()
+            row = conn.execute("SELECT * FROM crack_results WHERE run_id = ?", (run.id,)).fetchone()
         if not row:
             return None
         data = dict(row)

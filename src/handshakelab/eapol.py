@@ -49,7 +49,10 @@ def _analyze_tcpdump(path: Path, tcpdump: str, size: int) -> CaptureAnalysis:
         [tcpdump, "-r", str(path), "-n", "ether proto 0x888e"],
         timeout=60,
     )
-    eapol = max(0, len([ln for ln in eapol_r.stdout.splitlines() if "EAPOL" in ln or "0x888e" in ln.lower()]))
+    eapol = max(
+        0,
+        len([ln for ln in eapol_r.stdout.splitlines() if "EAPOL" in ln or "0x888e" in ln.lower()]),
+    )
 
     if eapol == 0:
         eapol_r2 = run(

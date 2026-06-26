@@ -85,7 +85,9 @@ def build_combined_wordlist(
 
     for path in extra_paths or []:
         if path.exists():
-            add_many([ln.strip() for ln in path.read_text(errors="ignore").splitlines() if ln.strip()])
+            add_many(
+                [ln.strip() for ln in path.read_text(errors="ignore").splitlines() if ln.strip()]
+            )
 
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text("\n".join(lines) + "\n")

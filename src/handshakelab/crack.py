@@ -46,9 +46,7 @@ def crack_run(
     cfg = crack_config or CrackConfig()
     wl = wordlist or (Path(cfg.wordlist) if cfg.wordlist else None)
     if not wl or not wl.exists():
-        raise CrackError(
-            "Wordlist required. Pass --wordlist or set crack.wordlist in lab.toml."
-        )
+        raise CrackError("Wordlist required. Pass --wordlist or set crack.wordlist in lab.toml.")
 
     output = attempt_crack(hash_path, wl, cfg, run_dir=hash_path.parent)
     vault.save_crack_result(
@@ -104,7 +102,9 @@ def _crack_hash(
     stage_label: str | None = None,
     vault: Vault | None = None,
 ) -> CrackOutput:
-    hashcat = cfg.hashcat_bin if Path(cfg.hashcat_bin).exists() else (which("hashcat") or cfg.hashcat_bin)
+    hashcat = (
+        cfg.hashcat_bin if Path(cfg.hashcat_bin).exists() else (which("hashcat") or cfg.hashcat_bin)
+    )
     if not which(hashcat) and not Path(hashcat).exists():
         raise CrackError("hashcat not found in PATH.")
 

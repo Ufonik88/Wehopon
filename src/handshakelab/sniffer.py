@@ -14,6 +14,7 @@ from handshakelab.util import platform as plat
 from handshakelab.util.proc import run, which
 from handshakelab.util.wifi import (
     airport_path,
+    is_builtin_wifi,
     linux_supports_monitor,
     set_linux_monitor_mode,
 )
@@ -58,13 +59,9 @@ def passive_capture(
     for name in backends:
         try:
             if name == "hcxdumptool":
-                result = _sniff_hcxdumptool(
-                    iface, output, bssid, channel, duration_sec, on_tick
-                )
+                result = _sniff_hcxdumptool(iface, output, bssid, channel, duration_sec, on_tick)
             elif name == "tcpdump":
-                result = _sniff_tcpdump(
-                    iface, output, bssid, channel, duration_sec, on_tick
-                )
+                result = _sniff_tcpdump(iface, output, bssid, channel, duration_sec, on_tick)
             elif name == "airport":
                 result = _sniff_airport(iface, output, channel, duration_sec, on_tick)
             else:
@@ -113,6 +110,8 @@ def _sniff_tcpdump(
 
     mon_iface = iface
     restored = False
+    builtin_warning = False
+
     if plat.is_linux():
         if not linux_supports_monitor(iface):
             raise SnifferError(
@@ -121,11 +120,17 @@ def _sniff_tcpdump(
         set_linux_monitor_mode(iface, enable=True)
         restored = True
         mon_iface = iface
+    elif plat.is_macos() and is_builtin_wifi(iface):
+        # Apple kernel disallows monitor mode on built-in Broadcom WiFi.
+        # tcpdump on en0 still works but only captures frames to/from this Mac's MAC.
+        builtin_warning = True
 
     if plat.is_linux() and which("iw"):
         run(["iw", "dev", iface, "set", "channel", str(channel)], check=False)
 
-    # Capture EAPOL + WiFi data; filter by BSSID when known
+    # Capture EAPOL + WiFi data; filter by BSSID when known.
+    # On macOS built-in WiFi, the wlan BPF filters are accepted by tcpdump
+    # but only the "ether proto 0x888e" portion actually fires (broadcast).
     bpf = "ether proto 0x888e or wlan type data"
     if bssid:
         bpf = f"(wlan addr1 {bssid} or wlan addr2 {bssid} or wlan addr3 {bssid}) and (ether proto 0x888e or wlan type data)"
@@ -144,6 +149,13 @@ def _sniff_tcpdump(
         while time.monotonic() - start < duration_sec:
             time.sleep(2)
             analysis = analyze_capture(output)
+            if builtin_warning and on_tick:
+                # Surface the macOS en0 limitation up-front in the UI
+                on_tick(
+                    analysis,
+                    f"⚠ Built-in macOS WiFi ({iface}) cannot do monitor mode; only frames "
+                    f"to/from this Mac are captured. Use a USB adapter for real handshake capture.",
+                )
             msg = (
                 f"Listening passively… {analysis.total_packets} packets, "
                 f"{analysis.eapol_frames} EAPOL frame(s)"
@@ -165,6 +177,13 @@ def _sniff_tcpdump(
 
     analysis = analyze_capture(output)
     if not analysis.has_handshake and analysis.total_packets == 0:
+        if builtin_warning:
+            raise SnifferError(
+                f"No packets captured. {iface} is the built-in macOS WiFi which cannot do "
+                "monitor mode — only frames to/from this Mac are visible. Connect a USB WiFi "
+                "adapter (e.g. Alfa AWUS036ACH) and retry, or `handshakelab import <file.pcapng>` "
+                "to process a pre-captured handshake."
+            )
         raise SnifferError("tcpdump captured no packets — check adapter and channel")
 
     return SnifferResult(

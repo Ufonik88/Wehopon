@@ -12,6 +12,7 @@ from handshakelab.util.wifi import (
     airport_path,
     has_root,
     interface_exists,
+    is_builtin_wifi,
     linux_supports_monitor,
     tool_paths,
 )
@@ -72,7 +73,8 @@ def run_doctor(
         Check(
             "capture_backend",
             capture_ok_for_handshake,
-            capture_detail + (
+            capture_detail
+            + (
                 " | macOS: install hcxdumptool for monitor-mode capture (see docs/HARDWARE.md)"
                 if plat.is_macos() and not tools.get("hcxdumptool")
                 else ""
@@ -107,13 +109,16 @@ def run_doctor(
                 )
             )
         elif exists and plat.is_macos():
-            detail = (
-                "macOS built-in WiFi cannot do raw 802.11 monitor frames. "
-                "Use a USB adapter + hcxdumptool for handshake capture."
-                if plat.is_modern_macos(14)
-                else "macOS: built-in WiFi uses airport sniff; external USB + hcxdumptool for PMKID"
-            )
-            checks.append(Check(f"monitor_mode:{iface}", False, detail))
+            if is_builtin_wifi(iface):
+                # Apple kernel restriction on Broadcom built-in WiFi
+                builtin = "Built-in macOS WiFi (Broadcom) cannot do monitor mode — kernel-level Apple restriction. Captures only frames to/from this Mac's MAC. Use a USB adapter (Alfa AWUS036ACH) for real handshake capture."
+            elif plat.is_modern_macos(14):
+                builtin = "macOS built-in WiFi cannot do raw 802.11 monitor frames. Use a USB adapter + hcxdumptool for handshake capture."
+            else:
+                builtin = (
+                    "macOS: built-in WiFi uses airport sniff; external USB + hcxdumptool for PMKID"
+                )
+            checks.append(Check(f"monitor_mode:{iface}", False, builtin))
 
     checks.append(
         Check(

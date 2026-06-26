@@ -47,4 +47,3 @@ def empty_pcap_path(fixtures_dir: Path) -> Path:
     if not pcap_path.exists():
         pytest.skip("Empty PCAP fixture not found. See fixtures/README.md")
     return pcap_path
-

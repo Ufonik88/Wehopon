@@ -48,6 +48,19 @@ def is_modern_macos(min_major: int = 14) -> bool:
     return v is not None and v >= min_major
 
 
+def is_builtin_wifi(iface: str) -> bool:
+    """Heuristic: is this the built-in macOS WiFi (en0/en1)?
+
+    Built-in Apple WiFi adapters (Broadcom BCM43xx) cannot do monitor mode
+    on macOS — this is a kernel-level Apple restriction, not a hardware
+    limitation. They can scan networks but cannot sniff other clients'
+    EAPOL handshakes. A USB adapter is required for real handshake capture.
+    """
+    if not is_macos():
+        return False
+    return iface in ("en0", "en1")
+
+
 def data_dir() -> Path:
     if is_macos():
         base = Path.home() / "Library" / "Application Support" / "handshakelab"
